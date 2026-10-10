@@ -205,8 +205,6 @@
     schools: [],
     selectedSchoolId: '17692',
     currentDateStr: '',
-    simulatedMode: 'real',
-    dayOffset: 0,
     isLocked: false,
     currentRole: 'docente', // 'docente' o 'admin'
     adminEditMatricula: false,
@@ -292,20 +290,7 @@
   }
 
   function getEffectiveCurrentTime() {
-    const realDate = new Date();
-    if (state.dayOffset) {
-      realDate.setDate(realDate.getDate() + state.dayOffset);
-    }
-    if (state.simulatedMode === 'open') {
-      const sim = new Date(realDate);
-      sim.setHours(10, 0, 0, 0);
-      return sim;
-    } else if (state.simulatedMode === 'closed') {
-      const sim = new Date(realDate);
-      sim.setHours(14, 45, 0, 0);
-      return sim;
-    }
-    return realDate;
+    return new Date();
   }
 
   /**
@@ -1913,43 +1898,6 @@
     }
   }
 
-  function handleSimulatorChange(val) {
-    if (val === 'next_day') {
-      state.dayOffset = (state.dayOffset || 0) + 1;
-      state.simulatedMode = 'open'; // El nuevo día inicia en horario abierto
-      updateDateAndCheckMidnightReset();
-      checkTimeLockout();
-      renderSchoolsTiles();
-      renderTeacherTable();
-      if (state.currentRole === 'admin') {
-        renderGlobalConsolidatedTable();
-      }
-      showToast(`📅 Avanzado al Día Siguiente (+${state.dayOffset} día/s). Fecha simulada: ${state.currentDateStr}. Matrícula restablecida a la oficial.`);
-      const simSelect = document.getElementById('timeSimulatorSelect');
-      if (simSelect) simSelect.value = 'open';
-      return;
-    } else if (val === 'reset_date') {
-      state.dayOffset = 0;
-      state.simulatedMode = 'real';
-      updateDateAndCheckMidnightReset();
-      checkTimeLockout();
-      renderSchoolsTiles();
-      renderTeacherTable();
-      if (state.currentRole === 'admin') {
-        renderGlobalConsolidatedTable();
-      }
-      showToast('⏮️ Fecha y hora restablecidas a los valores reales.');
-      const simSelect = document.getElementById('timeSimulatorSelect');
-      if (simSelect) simSelect.value = 'real';
-      return;
-    }
-
-    state.simulatedMode = val;
-    checkTimeLockout();
-    renderTeacherTable();
-    showToast(`Horario cambiado a modo: ${val === 'real' ? 'Hora Real' : (val === 'open' ? '10:00 AM (Abierto)' : '02:45 PM (Cerrado - Auto Descarga)')}`);
-  }
-
   function showToast(msg) {
     const toast = document.getElementById('toastNotification');
     const toastMsg = document.getElementById('toastMessage');
@@ -1968,8 +1916,7 @@
     saveCurrentSchoolAttendance,
     toggleAdminAccess,
     toggleAdminEditMatricula,
-    downloadDailyExcel,
-    handleSimulatorChange
+    downloadDailyExcel
   };
 
   document.addEventListener('DOMContentLoaded', init);

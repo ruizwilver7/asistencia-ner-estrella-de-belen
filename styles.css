@@ -186,29 +186,6 @@ body {
   background: rgba(255, 255, 255, 0.22);
 }
 
-.simulator-box {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  border-left: 1px solid rgba(255, 255, 255, 0.15);
-  padding-left: 0.6rem;
-}
-
-.sim-label {
-  font-size: 0.68rem;
-  color: #cbd5e1;
-}
-
-.simulator-box select {
-  background: #0f172a;
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-sm);
-  padding: 0.15rem 0.35rem;
-  font-size: 0.7rem;
-  outline: none;
-}
-
 /* ================= LOCK BANNER ================= */
 .lock-banner {
   background: #991b1b;

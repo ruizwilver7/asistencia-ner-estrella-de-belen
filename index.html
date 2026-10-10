@@ -53,17 +53,6 @@
           <span id="roleButtonText">Vista Dirección (Consolidado)</span>
         </button>
 
-        <!-- MODO PRUEBA DE HORARIOS (10:00 AM vs 2:45 PM vs DÍA SIGUIENTE) -->
-        <div class="simulator-box" title="Permite probar el cierre de las 2:30 PM, la auto descarga y el reinicio al día siguiente">
-          <span class="sim-label">Prueba:</span>
-          <select id="timeSimulatorSelect" onchange="window.app.handleSimulatorChange(this.value)">
-            <option value="real">Hora Real</option>
-            <option value="open">10:00 AM (Abierto)</option>
-            <option value="closed">02:45 PM (Cerrado - Auto Descarga)</option>
-            <option value="next_day">⏩ Simular Día Siguiente (+1 Día)</option>
-            <option value="reset_date">⏮️ Restablecer a Fecha Real</option>
-          </select>
-        </div>
       </div>
     </div>
   </header>
