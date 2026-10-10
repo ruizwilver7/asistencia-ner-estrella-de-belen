@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistencia NER Estrella de Belén - Control Diario</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- ExcelJS para generar hojas de cálculo con formato, colores, bordes y estilos profesionales -->
+  <script src="exceljs.min.js"></script>
+  <script>
+    if (typeof ExcelJS === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"><\\/script>');
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ================= ENCABEZADO PRINCIPAL ================= -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>Asistencia NER Estrella de Belén</h1>
+          <p class="subtitle" id="headerSubtitle">Control Diario Consolidado de Centros Educativos</p>
+        </div>
+      </div>
+
+      <!-- PANEL DE HORA Y ESTADO DEL SISTEMA -->
+      <div class="system-status-card">
+        <div class="time-display">
+          <span class="live-clock" id="liveClock">--:--:--</span>
+          <span class="live-date" id="liveDate">Cargando fecha...</span>
+        </div>
+
+        <div class="status-indicator-badge" id="systemLockBadge">
+          <span class="status-dot"></span>
+          <span id="systemStatusText">Abierto para Registro</span>
+        </div>
+
+        <!-- BOTÓN PARA CAMBIAR ENTRE VISTA DOCENTE Y VISTA DIRECCIÓN -->
+        <button class="btn btn-role-toggle" id="btnToggleRole" onclick="window.app.toggleAdminAccess()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span id="roleButtonText">Vista Dirección (Consolidado)</span>
+        </button>
+
+        <!-- MODO PRUEBA DE HORARIOS (10:00 AM vs 2:45 PM vs DÍA SIGUIENTE) -->
+        <div class="simulator-box" title="Permite probar el cierre de las 2:30 PM, la auto descarga y el reinicio al día siguiente">
+          <span class="sim-label">Prueba:</span>
+          <select id="timeSimulatorSelect" onchange="window.app.handleSimulatorChange(this.value)">
+            <option value="real">Hora Real</option>
+            <option value="open">10:00 AM (Abierto)</option>
+            <option value="closed">02:45 PM (Cerrado - Auto Descarga)</option>
+            <option value="next_day">⏩ Simular Día Siguiente (+1 Día)</option>
+            <option value="reset_date">⏮️ Restablecer a Fecha Real</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER DE AVISO DE CIERRE A LAS 2:30 PM -->
+  <div class="lock-banner hidden" id="lockBanner">
+    <div class="banner-content">
+      <div class="banner-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <div>
+        <strong id="lockBannerTitle">SISTEMA CERRADO POR EL DÍA DE HOY (Horario límite: 2:30 PM)</strong>
+        <p id="lockBannerDetails" style="display: none; margin-top: 0.25rem;">El horario de registro ha finalizado. <strong>El consolidado oficial en Excel se ha generado y descargado automáticamente.</strong> A las 00:00 horas (medianoche) el sistema se habilitará para el nuevo día y restablecerá la Matrícula Actual a la matrícula oficial de Dirección.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="app-main-content">
+
+    <!-- ========================================================= -->
+    <!-- 1. VISTA EXCLUSIVA PARA EL DOCENTE (POR DEFECTO)          -->
+    <!-- ========================================================= -->
+    <div id="view-docente" class="app-view active">
+      
+      <!-- SELECCIÓN DIRECTA DE CENTROS (TARJETAS ACCESIBLES) -->
+      <div class="school-selection-section">
+        <div class="selection-header">
+          <h3>Seleccione su Centro Educativo para ingresar asistencia:</h3>
+        </div>
+        <div class="schools-tiles-grid" id="schoolsTilesGrid">
+          <!-- Renderizado dinámicamente con los 6 centros -->
+        </div>
+      </div>
+
+      <!-- BANNER DE ALERTA DE VALIDACIÓN (SI ASISTENCIA > MATRÍCULA) -->
+      <div class="validation-error-box hidden" id="validationAlertBox">
+        <div class="val-icon">⚠️</div>
+        <div class="val-text" id="validationAlertMsg">
+          <strong>Error de cuadre en la asistencia:</strong> Se encontraron inconsistencias donde la asistencia supera la matrícula.
+        </div>
+      </div>
+
+      <!-- CUADRO CONSOLIDADO COMPACTO DE LA ESCUELA SELECCIONADA -->
+      <div class="card main-table-card">
+        <div class="card-header table-card-header">
+          <div class="school-info-heading">
+            <span class="school-code-tag" id="teacherCurrentCode">Cód: -----</span>
+            <h2 id="teacherTableTitle">Centro Educativo</h2>
+            <span class="tag-status" id="teacherSavedStatusBadge">⏳ Pendiente</span>
+          </div>
+          <div class="header-right-actions">
+            <button class="btn btn-success" id="btnSaveAttendanceDocente" onclick="window.app.saveCurrentSchoolAttendance()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Guardar Asistencia de Hoy
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="ner-table ner-table-compact" id="teacherAttendanceTable">
+              <thead>
+                <!-- NIVEL 1 DE ENCABEZADOS -->
+                <tr class="thead-main-row">
+                  <th rowspan="2" class="th-modalidad">Modalidad</th>
+                  <th rowspan="2" class="th-turno">Turno</th>
+                  <th colspan="3" class="th-group th-matricula">Matrícula Actual</th>
+                  <th colspan="3" class="th-group th-asistencia">Asistencia Estudiantes</th>
+                  <th rowspan="2" class="th-pct">% Asist.</th>
+                  <th colspan="3" class="th-group th-doc-asist">Docentes Asistieron</th>
+                  <th colspan="3" class="th-group th-doc-just">Docentes Justificados</th>
+                  <th colspan="3" class="th-group th-doc-injust">Docentes Injustificados</th>
+                </tr>
+                <!-- NIVEL 2 DE ENCABEZADOS (M, F, T) -->
+                <tr class="thead-sub-row">
+                  <!-- Matrícula -->
+                  <th class="col-m">M</th>
+                  <th class="col-f">F</th>
+                  <th class="col-t">T</th>
+                  <!-- Asistencia Estudiantes -->
+                  <th class="col-m">M</th>
+                  <th class="col-f">F</th>
+                  <th class="col-t">T</th>
+                  <!-- Docentes Asistencia -->
+                  <th class="col-m">M</th>
+                  <th class="col-f">F</th>
+                  <th class="col-t">T</th>
+                  <!-- Docentes Justificados -->
+                  <th class="col-m">M</th>
+                  <th class="col-f">F</th>
+                  <th class="col-t">T</th>
+                  <!-- Docentes Injustificados -->
+                  <th class="col-m">M</th>
+                  <th class="col-f">F</th>
+                  <th class="col-t">T</th>
+                </tr>
+              </thead>
+              <tbody id="teacherTableBody">
+                <!-- Se inyectan las filas compactas según la escuela seleccionada -->
+              </tbody>
+              <tfoot>
+                <tr class="tfoot-totals-row" id="teacherTableFooter">
+                  <!-- Totales calculados automáticamente de la escuela -->
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer-info">
+          <div class="info-inline">
+            <span class="bullet-dot"></span>
+            <span><strong>Regla Oficial:</strong> La Asistencia no puede superar a la Matrícula. Las casillas <strong>Total (T)</strong> son inalterables. Cada día a las 00:00 hrs la matrícula actual se restablece a la matrícula oficial guardada en Dirección.</span>
+          </div>
+          <div id="saveFeedbackText" class="save-status-msg"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- 2. VISTA DIRECCIÓN (CONSOLIDADO GENERAL Y MATRÍCULA OFICIAL) -->
+    <!-- ========================================================= -->
+    <div id="view-admin" class="app-view">
+      
+      <div class="admin-top-nav">
+        <div class="admin-title-group">
+          <span class="admin-badge">Panel de Dirección / Núcleo Educativo</span>
+          <h2>Consolidado General NER Estrella de Belén (6 Centros)</h2>
+          <p class="admin-subtitle">Consolidado general oficial, edición de matrícula base definitiva y exportación oficial.</p>
+        </div>
+        <div class="admin-actions">
+          <button class="btn btn-warning" id="btnToggleEditMatricula" onclick="window.app.toggleAdminEditMatricula()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span id="btnEditMatText">Editar Matrícula y Docentes</span>
+          </button>
+          <button class="btn btn-outline" onclick="window.app.downloadDailyExcel(false)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Descargar Excel Oficial (.xlsx)
+          </button>
+          <button class="btn btn-outline" onclick="window.print()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Imprimir
+          </button>
+          <button class="btn btn-secondary" onclick="window.app.toggleAdminAccess()">
+            ← Volver a Vista Docente
+          </button>
+        </div>
+      </div>
+
+      <!-- TARJETAS DE INDICADORES GLOBALES (KPIs) -->
+      <div class="admin-kpis-grid">
+        <div class="kpi-mini-card">
+          <span class="kpi-mini-title">Matrícula Total NER</span>
+          <span class="kpi-mini-val" id="adminKpiTotalMatricula">0</span>
+          <span class="kpi-mini-sub" id="adminKpiMatriculaSub">M: 0 | F: 0</span>
+        </div>
+        <div class="kpi-mini-card">
+          <span class="kpi-mini-title">Asistencia Total NER</span>
+          <span class="kpi-mini-val text-green" id="adminKpiTotalAsistencia">0</span>
+          <span class="kpi-mini-sub" id="adminKpiAsistenciaSub">M: 0 | F: 0</span>
+        </div>
+        <div class="kpi-mini-card">
+          <span class="kpi-mini-title">% Asistencia Global</span>
+          <span class="kpi-mini-val text-blue" id="adminKpiPorcentaje">0.0%</span>
+          <span class="kpi-mini-sub">Promedio consolidado</span>
+        </div>
+        <div class="kpi-mini-card">
+          <span class="kpi-mini-title">Docentes Asistieron</span>
+          <span class="kpi-mini-val text-green" id="adminKpiDocentesAsist">0</span>
+          <span class="kpi-mini-sub" id="adminKpiDocentesAusentes">0 ausentes</span>
+        </div>
+      </div>
+
+      <!-- TABLA GENERAL CONSOLIDADA DE LAS 6 ESCUELAS (IDÉNTICA AL FORMATO OFICIAL) -->
+      <div class="card mt-3">
+        <div class="card-header d-flex-between">
+          <div>
+            <h3>Tabla Consolidada General - Formato Oficial NER</h3>
+            <span class="edit-mode-indicator hidden" id="editModeIndicator">Modo Edición Activado: Puede alterar las matrículas y la cantidad de docentes de cada escuela. Estos valores se guardarán de forma permanente.</span>
+          </div>
+          <span class="badge" id="adminCentrosReportadosBadge">0 / 6 Centros Guardados</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="ner-table ner-table-compact ner-table-global" id="globalNerTable">
+              <thead>
+                <tr class="thead-main-row">
+                  <th rowspan="2">Nº</th>
+                  <th rowspan="2">Código</th>
+                  <th rowspan="2">Centro Educativo</th>
+                  <th rowspan="2">Modalidad</th>
+                  <th rowspan="2">Turno</th>
+                  <th colspan="3" class="th-group th-matricula">Matrícula</th>
+                  <th colspan="3" class="th-group th-asistencia">Asistencia</th>
+                  <th colspan="3" class="th-group th-pct">Porcentaje</th>
+                  <th colspan="3" class="th-group th-doc-cant">Plantilla Docentes</th>
+                  <th colspan="3" class="th-group th-doc-asist">Docentes Asistieron</th>
+                  <th colspan="3" class="th-group th-doc-just">Docentes Justificados</th>
+                  <th colspan="3" class="th-group th-doc-injust">Docentes Injustificados</th>
+                </tr>
+                <tr class="thead-sub-row">
+                  <th>M</th><th>F</th><th>T</th>
+                  <th>M</th><th>F</th><th>T</th>
+                  <th>M</th><th>F</th><th>T</th>
+                  <th>M</th><th>F</th><th>T</th>
+                  <th>M</th><th>F</th><th>T</th>
+                  <th>M</th><th>F</th><th>T</th>
+                  <th>M</th><th>F</th><th>T</th>
+                </tr>
+              </thead>
+              <tbody id="globalNerTableBody">
+                <!-- Se llena con las 6 escuelas y modalidades -->
+              </tbody>
+              <tfoot>
+                <tr class="tfoot-totals-row" id="globalNerTableFooter">
+                  <!-- Totales generales -->
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- NOTIFICACIÓN FLOTANTE (TOAST) -->
+  <div class="toast-notification" id="toastNotification">
+    <span id="toastMessage">Operación realizada con éxito</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

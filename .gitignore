@@ -1,0 +1,22 @@
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs y pruebas
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencias Node (si se usaran en el futuro)
+node_modules/
+
+# Entornos y temporales
+.vscode/
+.idea/
+.system_generated/
+.user_uploaded/
+scratch/
+test-*.js
+verify-*.js
