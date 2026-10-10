@@ -209,8 +209,7 @@
     currentRole: 'docente', // 'docente' o 'admin'
     adminEditMatricula: false,
     dailyAttendance: {},
-    autoSavedLog: {}, // Control de descargas automáticas por fecha
-    teacherViewMode: (typeof window !== 'undefined' && window.innerWidth <= 768) ? 'cards' : 'table'
+    autoSavedLog: {} // Control de descargas automáticas por fecha
   };
 
   /**
@@ -431,37 +430,10 @@
     renderSchoolsTiles();
     renderTeacherTable();
 
-    // En pantallas de celulares y tablets, deslizar suavemente hacia el cuadro de llenado
-    if (window.innerWidth <= 768) {
-      const targetCard = document.querySelector('.main-table-card');
-      if (targetCard) {
-        targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  }
-
-  function setTeacherViewMode(mode) {
-    if (state.teacherViewMode === mode) return;
-    saveCurrentInputsToMemory(state.selectedSchoolId);
-    state.teacherViewMode = mode;
-    renderTeacherTable();
-  }
-
-  function updateViewModeTabs() {
-    const btnCards = document.getElementById('btnModeCards');
-    const btnTable = document.getElementById('btnModeTable');
-    const scrollHint = document.getElementById('tableScrollHint');
-
-    if (btnCards && btnTable) {
-      if (state.teacherViewMode === 'cards') {
-        btnCards.classList.add('active');
-        btnTable.classList.remove('active');
-        if (scrollHint) scrollHint.classList.add('hidden');
-      } else {
-        btnTable.classList.add('active');
-        btnCards.classList.remove('active');
-        if (scrollHint) scrollHint.classList.remove('hidden');
-      }
+    // Reubicar de forma automática y suave hacia la tabla de llenado del centro seleccionado
+    const cardArea = document.getElementById('cardAreaAsistencia');
+    if (cardArea) {
+      cardArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
@@ -516,55 +488,31 @@
   }
 
   /**
-   * RENDERIZA EL ÁREA DE ASISTENCIA DEL DOCENTE:
-   * - Modo Tarjetas Táctiles: adaptado e intuitivo para teléfonos celulares y pantallas verticales.
-   * - Modo Tabla Compacta: formato oficial horizontal con columna de modalidad fija para deslizar sin perderse.
+   * RENDERIZA LA TABLA DE ASISTENCIA DEL DOCENTE:
+   * Formato oficial con diseño El Cuá: colores temáticos, columna fija, inputs táctiles amplios
+   * y cálculo dinámico en tiempo real.
    */
   function renderTeacherTable() {
     const school = state.schools.find(s => s.id === state.selectedSchoolId);
     if (!school) return;
 
-    document.getElementById('teacherCurrentCode').textContent = `Cód: ${school.code}`;
-    document.getElementById('teacherTableTitle').textContent = `${school.name}`;
+    const codeEl = document.getElementById('teacherCurrentCode');
+    const titleEl = document.getElementById('teacherTableTitle');
+    if (codeEl) codeEl.textContent = `Cód: ${school.code}`;
+    if (titleEl) titleEl.textContent = `${school.name}`;
 
     const todayData = getTodayAttendance();
     const schoolRecord = todayData[school.id] || { modalities: {}, saved: false };
 
     const statusBadge = document.getElementById('teacherSavedStatusBadge');
-    const mobileStatusBadge = document.getElementById('mobileSummaryStatusBadge');
-    const badgeText = schoolRecord.saved ? `✓ Guardado Hoy (${schoolRecord.savedAt || ''})` : '⏳ Pendiente de Guardar';
-    const badgeClass = schoolRecord.saved ? 'tag-status saved' : 'tag-status';
-
     if (statusBadge) {
-      statusBadge.textContent = badgeText;
-      statusBadge.className = badgeClass;
-    }
-    if (mobileStatusBadge) {
-      mobileStatusBadge.textContent = schoolRecord.saved ? `✓ Guardado (${schoolRecord.savedAt || ''})` : '⏳ Pendiente';
-      mobileStatusBadge.className = badgeClass;
+      statusBadge.textContent = schoolRecord.saved ? `✓ Guardado Hoy (${schoolRecord.savedAt || ''})` : '⏳ Pendiente de Guardar';
+      statusBadge.className = schoolRecord.saved ? 'tag-status saved' : 'tag-status';
     }
 
-    updateViewModeTabs();
-
-    const isCardsMode = state.teacherViewMode === 'cards';
-    const cardsContainer = document.getElementById('teacherCardsContainer');
-    const tableWrapper = document.getElementById('teacherTableResponsive');
-    const mobileSummaryCard = document.getElementById('teacherMobileSummaryCard');
-
-    if (isCardsMode) {
-      if (cardsContainer) {
-        cardsContainer.classList.remove('hidden');
-        cardsContainer.innerHTML = '';
-      }
-      if (tableWrapper) tableWrapper.classList.add('hidden');
-      if (mobileSummaryCard) mobileSummaryCard.classList.remove('hidden');
-    } else {
-      if (cardsContainer) cardsContainer.classList.add('hidden');
-      if (tableWrapper) tableWrapper.classList.remove('hidden');
-      if (mobileSummaryCard) mobileSummaryCard.classList.add('hidden');
-      const tbody = document.getElementById('teacherTableBody');
-      if (tbody) tbody.innerHTML = '';
-    }
+    const tbody = document.getElementById('teacherTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
     school.modalities.forEach(mod => {
       const modData = (schoolRecord.modalities && schoolRecord.modalities[mod.id]) || null;
@@ -616,212 +564,79 @@
         pct = Math.round((asistT / matT) * 1000) / 10;
       }
 
-      if (isCardsMode && cardsContainer) {
-        // ========================================================
-        // 1. MODO TARJETAS MÓVILES (INTUITIVO Y CÓMODO PARA TELÉFONOS)
-        // ========================================================
-        const card = document.createElement('div');
-        card.className = `modality-mobile-card ${!hasDocenteAtendiendo ? 'card-zero-locked' : ''}`;
-        card.id = `card-${mod.id}`;
-        card.innerHTML = `
-          <div class="mod-card-header">
-            <div class="mod-card-title-group">
-              <span class="mod-card-badge">Modalidad</span>
-              <h3 class="mod-card-title">${mod.name}</h3>
-            </div>
-            <div class="mod-card-tags">
-              <span class="mod-turno-badge">${mod.turno}</span>
-              <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="pct-${mod.id}">${pct.toFixed(1)}%</span>
-            </div>
-          </div>
+      const tr = document.createElement('tr');
+      tr.id = `row-${mod.id}`;
+      tr.innerHTML = `
+        <td class="col-modalidad">
+          <strong>${mod.name}</strong>
+        </td>
+        <td class="col-turno">
+          ${mod.turno}
+        </td>
 
-          <div class="mod-card-alert-locked" style="display: ${!hasDocenteAtendiendo ? 'flex' : 'none'};">
-            <span>⚠️</span>
-            <span><strong>Sin docente atendiendo esta modalidad (Asistencia Docente = 0).</strong> Matrícula y Asistencia fijadas automáticamente en 0.</span>
-          </div>
+        <!-- MATRÍCULA ACTUAL (M, F editables; T inalterable) -->
+        <td class="mat">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" value="${matM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Matrícula fijada en 0."' : ''}>
+        </td>
+        <td class="mat">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" value="${matF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Matrícula fijada en 0."' : ''}>
+        </td>
+        <td class="calc">
+          <input type="text" class="cua-input calc-input" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
+        </td>
 
-          <div class="mod-card-body">
-            <!-- SECCIÓN 1: MATRÍCULA ACTUAL -->
-            <div class="mod-section mod-section-matricula">
-              <div class="mod-sec-heading">
-                <span class="mod-sec-icon">👥</span>
-                <span class="mod-sec-title">Matrícula Actual</span>
-                <span class="mod-sec-sub">(Editable para hoy)</span>
-              </div>
-              <div class="mod-grid-inputs">
-                <div class="mod-field">
-                  <label>Varones (M)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" value="${matM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field">
-                  <label>Mujeres (F)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" value="${matF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field mod-field-total">
-                  <label>Total (T)</label>
-                  <input type="text" class="ner-input-total-readonly mobile-input" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
-                </div>
-              </div>
-            </div>
+        <!-- ASISTENCIA ESTUDIANTES (M, F editables; T inalterable) -->
+        <td class="asist">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" placeholder="0" value="${asistM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Asistencia fijada en 0."' : ''}>
+        </td>
+        <td class="asist">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" placeholder="0" value="${asistF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Asistencia fijada en 0."' : ''}>
+        </td>
+        <td class="calc">
+          <input type="text" class="cua-input calc-input" id="asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
+        </td>
 
-            <!-- SECCIÓN 2: ASISTENCIA ESTUDIANTES -->
-            <div class="mod-section mod-section-asistencia">
-              <div class="mod-sec-heading">
-                <span class="mod-sec-icon">📝</span>
-                <span class="mod-sec-title">Asistencia Estudiantes</span>
-                <span class="mod-sec-sub">(≤ Matrícula)</span>
-              </div>
-              <div class="mod-grid-inputs">
-                <div class="mod-field">
-                  <label>Varones (M)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" placeholder="0" value="${asistM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field">
-                  <label>Mujeres (F)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" placeholder="0" value="${asistF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field mod-field-total">
-                  <label>Total (T)</label>
-                  <input type="text" class="ner-input-total-readonly mobile-input" id="asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
-                </div>
-              </div>
-            </div>
+        <!-- % ASISTENCIA -->
+        <td class="calc">
+          <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="pct-${mod.id}">${pct.toFixed(1)}%</span>
+        </td>
 
-            <!-- SECCIÓN 3: ASISTENCIA DOCENTES -->
-            <div class="mod-section mod-section-docentes">
-              <div class="mod-sec-heading">
-                <span class="mod-sec-icon">👨‍🏫</span>
-                <span class="mod-sec-title">Docentes de la Modalidad</span>
-                <span class="mod-sec-sub">Plantilla: ${mod.baseDocM + mod.baseDocF} (${mod.baseDocM}M, ${mod.baseDocF}F)</span>
-              </div>
+        <!-- DOCENTES ASISTIERON -->
+        <td class="calc">
+          <input type="text" class="cua-input calc-input" id="doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocM}. Se descuentan ausencias automáticamente.">
+        </td>
+        <td class="calc">
+          <input type="text" class="cua-input calc-input" id="doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocF}. Se descuentan ausencias automáticamente.">
+        </td>
+        <td class="calc">
+          <input type="text" class="cua-input calc-input bold-total" id="doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1">
+        </td>
 
-              <div class="mod-doc-asist-strip">
-                <span class="strip-label">Asistieron Hoy:</span>
-                <div class="strip-boxes">
-                  <span>M: <input type="text" class="ner-input-total-readonly mini-strip" id="doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1"></span>
-                  <span>F: <input type="text" class="ner-input-total-readonly mini-strip" id="doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1"></span>
-                  <strong>Total: <input type="text" class="ner-input-total-readonly mini-strip bold" id="doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1"></strong>
-                </div>
-              </div>
+        <!-- DOCENTES JUSTIFICADOS -->
+        <td class="doc">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-just-m-${mod.id}" value="${docJustM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+        </td>
+        <td class="doc">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-just-f-${mod.id}" value="${docJustF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+        </td>
+        <td class="calc">
+          <input type="text" class="cua-input calc-input" id="doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
+        </td>
 
-              <!-- Justificados -->
-              <div class="mod-sub-doc-title">Ausencias Justificadas:</div>
-              <div class="mod-grid-inputs">
-                <div class="mod-field">
-                  <label>Just. Varones (M)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input" id="doc-just-m-${mod.id}" value="${docJustM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field">
-                  <label>Just. Mujeres (F)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input" id="doc-just-f-${mod.id}" value="${docJustF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field mod-field-total">
-                  <label>Total Just.</label>
-                  <input type="text" class="ner-input-total-readonly mobile-input" id="doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
-                </div>
-              </div>
+        <!-- DOCENTES INJUSTIFICADOS -->
+        <td class="doc">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-injust-m-${mod.id}" value="${docInjustM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+        </td>
+        <td class="doc">
+          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-injust-f-${mod.id}" value="${docInjustF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+        </td>
+        <td class="calc">
+          <input type="text" class="cua-input calc-input" id="doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
+        </td>
+      `;
+      tbody.appendChild(tr);
 
-              <!-- Injustificados -->
-              <div class="mod-sub-doc-title mt-1">Ausencias Injustificadas:</div>
-              <div class="mod-grid-inputs">
-                <div class="mod-field">
-                  <label>Injust. Varones (M)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input" id="doc-injust-m-${mod.id}" value="${docInjustM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field">
-                  <label>Injust. Mujeres (F)</label>
-                  <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input mobile-input" id="doc-injust-f-${mod.id}" value="${docInjustF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                </div>
-                <div class="mod-field mod-field-total">
-                  <label>Total Injust.</label>
-                  <input type="text" class="ner-input-total-readonly mobile-input" id="doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        cardsContainer.appendChild(card);
-      } else {
-        // ========================================================
-        // 2. MODO TABLA CLÁSICA COMPACTA (CON COLUMNAS FIJAS)
-        // ========================================================
-        const tbody = document.getElementById('teacherTableBody');
-        if (tbody) {
-          const tr = document.createElement('tr');
-          tr.id = `row-${mod.id}`;
-          tr.innerHTML = `
-            <td class="td-modalidad">
-              <strong>${mod.name}</strong>
-            </td>
-            <td class="td-turno">
-              ${mod.turno}
-            </td>
-
-            <!-- MATRÍCULA ACTUAL (M, F editables; T inalterable) -->
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" value="${matM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad (Asistencia Docente = 0). Matrícula fijada en 0."' : ''}>
-            </td>
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" value="${matF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad (Asistencia Docente = 0). Matrícula fijada en 0."' : ''}>
-            </td>
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
-            </td>
-
-            <!-- ASISTENCIA ESTUDIANTES (M, F editables; T inalterable) -->
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" placeholder="0" value="${asistM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Asistencia fijada en 0."' : ''}>
-            </td>
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" placeholder="0" value="${asistF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Asistencia fijada en 0."' : ''}>
-            </td>
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
-            </td>
-
-            <!-- % ASISTENCIA -->
-            <td>
-              <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="pct-${mod.id}">${pct.toFixed(1)}%</span>
-            </td>
-
-            <!-- DOCENTES ASISTIERON -->
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocM}. Se descuentan ausencias automáticamente.">
-            </td>
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocF}. Se descuentan ausencias automáticamente.">
-            </td>
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1">
-            </td>
-
-            <!-- DOCENTES JUSTIFICADOS -->
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input" id="doc-just-m-${mod.id}" value="${docJustM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-            </td>
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input" id="doc-just-f-${mod.id}" value="${docJustF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-            </td>
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
-            </td>
-
-            <!-- DOCENTES INJUSTIFICADOS -->
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input" id="doc-injust-m-${mod.id}" value="${docInjustM}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-            </td>
-            <td>
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="ner-input" id="doc-injust-f-${mod.id}" value="${docInjustF}" oninput="window.app.recalculateRow('${mod.id}')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-            </td>
-            <td>
-              <input type="text" class="ner-input-total-readonly" id="doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
-            </td>
-          `;
-          tbody.appendChild(tr);
-        }
-      }
-
-      // Calcular validación de fila/tarjeta inicial
+      // Calcular validación de fila inicial
       recalculateRow(mod.id);
     });
 
@@ -988,20 +803,7 @@
       docJustFInput.title = '';
     }
 
-    // Actualizar visualización en tarjeta móvil si está activa
-    const cardEl = document.getElementById(`card-${modId}`);
-    if (cardEl) {
-      const cardLockAlert = cardEl.querySelector('.mod-card-alert-locked');
-      if (!hasDocenteAtendiendo) {
-        cardEl.classList.add('card-zero-locked');
-        if (cardLockAlert) cardLockAlert.style.display = 'flex';
-      } else {
-        cardEl.classList.remove('card-zero-locked');
-        if (cardLockAlert) cardLockAlert.style.display = 'none';
-      }
-    }
-
-    // Mantener la memoria de hoy actualizada para sincronización fluida entre vistas
+    // Mantener la memoria de hoy actualizada para persistencia fluida
     const todayData = getTodayAttendance();
     if (school) {
       if (!todayData[school.id]) todayData[school.id] = { modalities: {}, saved: false };
@@ -1163,43 +965,30 @@
     const tfoot = document.getElementById('teacherTableFooter');
     if (tfoot) {
       tfoot.innerHTML = `
-        <td colspan="2" style="text-align: right; font-weight: 800; padding-right: 0.6rem;">TOTAL:</td>
+        <td colspan="2" class="col-modalidad sticky-footer-col" style="text-align: right; font-weight: 800; padding-right: 0.6rem;">TOTAL:</td>
         <td class="tfoot-total-val">${totMatM}</td>
         <td class="tfoot-total-val">${totMatF}</td>
-        <td class="tfoot-total-val" style="background:#1e293b;">${totMatT}</td>
+        <td class="tfoot-total-val highlight-total">${totMatT}</td>
 
         <td class="tfoot-total-val">${totAsistM}</td>
         <td class="tfoot-total-val">${totAsistF}</td>
-        <td class="tfoot-total-val" style="background:#1e293b;">${totAsistT}</td>
+        <td class="tfoot-total-val highlight-total">${totAsistT}</td>
 
         <td class="tfoot-total-val"><span class="pct-cell-badge pct-high">${overallPct.toFixed(1)}%</span></td>
 
         <td class="tfoot-total-val">${totDocAsistM}</td>
         <td class="tfoot-total-val">${totDocAsistF}</td>
-        <td class="tfoot-total-val" style="background:#1e293b;">${totDocAsistT}</td>
+        <td class="tfoot-total-val highlight-total">${totDocAsistT}</td>
 
         <td class="tfoot-total-val">${totDocJustM}</td>
         <td class="tfoot-total-val">${totDocJustF}</td>
-        <td class="tfoot-total-val" style="background:#1e293b;">${totDocJustT}</td>
+        <td class="tfoot-total-val highlight-total">${totDocJustT}</td>
 
         <td class="tfoot-total-val">${totDocInjustM}</td>
         <td class="tfoot-total-val">${totDocInjustF}</td>
-        <td class="tfoot-total-val" style="background:#1e293b;">${totDocInjustT}</td>
+        <td class="tfoot-total-val highlight-total">${totDocInjustT}</td>
       `;
     }
-
-    // Actualizar Resumen en Modo Móvil (Tarjetas)
-    const mobMat = document.getElementById('mobileSummaryTotMat');
-    const mobAsist = document.getElementById('mobileSummaryTotAsist');
-    const mobPct = document.getElementById('mobileSummaryTotPct');
-    const mobDoc = document.getElementById('mobileSummaryTotDoc');
-    if (mobMat) mobMat.textContent = `${totMatT}`;
-    if (mobAsist) mobAsist.textContent = `${totAsistT}`;
-    if (mobPct) {
-      mobPct.textContent = `${overallPct.toFixed(1)}%`;
-      mobPct.className = `pct-cell-badge ${overallPct >= 85 ? 'pct-high' : (overallPct >= 70 ? 'pct-med' : 'pct-low')}`;
-    }
-    if (mobDoc) mobDoc.textContent = `${totDocAsistT} presentes`;
   }
 
   /**
@@ -1276,12 +1065,6 @@
     if (statusBadge) {
       statusBadge.textContent = `✓ Guardado Hoy (${nowTimeStr})`;
       statusBadge.className = 'tag-status saved';
-    }
-
-    const mobileStatusBadge = document.getElementById('mobileSummaryStatusBadge');
-    if (mobileStatusBadge) {
-      mobileStatusBadge.textContent = `✓ Guardado (${nowTimeStr})`;
-      mobileStatusBadge.className = 'tag-status saved';
     }
 
     const feedback = document.getElementById('saveFeedbackText');
@@ -2204,8 +1987,7 @@
     saveCurrentSchoolAttendance,
     toggleAdminAccess,
     toggleAdminEditMatricula,
-    downloadDailyExcel,
-    setTeacherViewMode
+    downloadDailyExcel
   };
 
   document.addEventListener('DOMContentLoaded', init);

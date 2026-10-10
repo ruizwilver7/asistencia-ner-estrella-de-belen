@@ -458,384 +458,365 @@ body {
   color: #059669;
 }
 
-/* ================= SELECTOR DE VISTA (MÓVIL / TABLA) ================= */
-.view-mode-selector-bar {
+/* ================= DISEÑO OFICIAL TABLA ASISTENCIA (ESTILO EL CUÁ) ================= */
+.leyenda-cua {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.55rem 0.85rem;
-  background: #f1f5f9;
-  border-bottom: 1px solid #cbd5e1;
-}
-
-.view-mode-tabs {
-  display: inline-flex;
-  background: #e2e8f0;
-  padding: 3px;
-  border-radius: var(--radius-md);
-  gap: 3px;
-}
-
-.btn-tab-mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.76rem;
+  gap: 0.85rem;
+  padding: 0.65rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.78rem;
   font-weight: 600;
-  border: none;
-  background: transparent;
   color: #475569;
-  border-radius: calc(var(--radius-md) - 2px);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-  touch-action: manipulation;
 }
 
-.btn-tab-mode:hover {
-  color: #0f172a;
+.box-legend {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: -2px;
+  margin-right: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
-.btn-tab-mode.active {
-  background: #1e3a8a;
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+.box-legend.mat-color {
+  background: #FFFBEA;
+  border-color: #E2D2A9;
 }
 
-.table-scroll-hint {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #2563eb;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+.box-legend.asist-color {
+  background: #E6F4EA;
+  border-color: #A8D5B8;
 }
 
-.table-scroll-hint.hidden {
-  display: none !important;
+.box-legend.doc-color {
+  background: #F6ECD3;
+  border-color: #dfcf9b;
+}
+
+.box-legend.calc-color {
+  background: #F4F6F8;
+  border-color: #D8DEE4;
 }
 
 .table-scroll-hint-bar {
-  padding: 0.35rem 0.85rem;
+  padding: 0.45rem 1rem;
   background: #eff6ff;
   border-bottom: 1px solid #bfdbfe;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: #1e40af;
   text-align: center;
 }
 
-/* ================= VISTA MÓVIL: TARJETAS INTUITIVAS POR MODALIDAD ================= */
-.teacher-cards-container {
-  padding: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  background: #f8fafc;
-}
-
-.teacher-cards-container.hidden {
-  display: none !important;
-}
-
-.modality-mobile-card {
+.tabla-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
   background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.modality-mobile-card:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.12);
-}
-
-.modality-mobile-card.card-zero-locked {
-  border-color: #cbd5e1;
-  opacity: 0.92;
-}
-
-.mod-card-header {
-  padding: 0.65rem 0.85rem;
-  background: #f8fafc;
-  border-bottom: 1.5px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.mod-card-title-group {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-}
-
-.mod-card-badge {
-  font-size: 0.66rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: #e2e8f0;
-  color: #334155;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-sm);
-  letter-spacing: 0.03em;
-}
-
-.mod-card-title {
-  font-size: 0.96rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.mod-card-tags {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.mod-turno-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: #f1f5f9;
-  color: #475569;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
-  border: 1px solid #cbd5e1;
-}
-
-.mod-card-alert-locked {
-  background: #fffbeb;
-  border-bottom: 1.5px solid #fde68a;
-  color: #92400e;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.76rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  line-height: 1.35;
-}
-
-.mod-card-body {
-  padding: 0.75rem 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-/* Secciones dentro de la tarjeta */
-.mod-section {
-  padding: 0.65rem 0.75rem;
-  border-radius: var(--radius-md);
-  border: 1px solid #e2e8f0;
-}
-
-.mod-section-matricula {
-  background: #f8faff;
-  border-left: 4px solid #3b82f6;
-  border-color: #dbeafe #dbeafe #dbeafe #3b82f6;
-}
-
-.mod-section-asistencia {
-  background: #f6fcf8;
-  border-left: 4px solid #10b981;
-  border-color: #d1fae5 #d1fae5 #d1fae5 #10b981;
-}
-
-.mod-section-docentes {
-  background: #fffcf5;
-  border-left: 4px solid #f59e0b;
-  border-color: #fef3c7 #fef3c7 #fef3c7 #f59e0b;
-}
-
-.mod-sec-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.mod-sec-icon {
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
-.mod-sec-title {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.mod-sec-sub {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.mod-grid-inputs {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.45rem;
-}
-
-.mod-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+/* TABLA OFICIAL */
+table.asistencia-tabla {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
   text-align: center;
+  background: #ffffff;
+  font-family: inherit;
 }
 
-.mod-field label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.mobile-input {
-  width: 100% !important;
-  height: 40px !important;
-  font-size: 1.05rem !important;
-  font-weight: 700 !important;
-  border-radius: var(--radius-sm) !important;
-  touch-action: manipulation;
-}
-
-.mod-field-total label {
-  color: #1e3a8a;
-}
-
-/* Sección Docentes en Tarjeta */
-.mod-doc-asist-strip {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: var(--radius-sm);
-  padding: 0.35rem 0.6rem;
-  margin-bottom: 0.55rem;
-  font-size: 0.74rem;
-  color: #166534;
-  font-weight: 600;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.strip-boxes {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.mini-strip {
-  width: 32px !important;
-  height: 25px !important;
-  font-size: 0.8rem !important;
-  font-weight: 700 !important;
-  display: inline-block;
+table.asistencia-tabla th,
+table.asistencia-tabla td {
+  border: 1px solid #d8dee4;
+  padding: 0.35rem 0.25rem;
   vertical-align: middle;
 }
 
-.mini-strip.bold {
-  background: #1e293b !important;
-  color: #ffffff !important;
-  border-color: #0f172a !important;
-}
-
-.mod-sub-doc-title {
-  font-size: 0.72rem;
+/* ENCABEZADOS PRINCIPALES */
+table.asistencia-tabla thead tr.thead-main-row th {
+  background: #1B4B7A;
+  color: #ffffff;
   font-weight: 700;
-  color: #64748b;
-  margin: 0.4rem 0 0.25rem 0;
+  font-size: 0.78rem;
   text-transform: uppercase;
+  padding: 0.55rem 0.35rem;
+  letter-spacing: 0.02em;
+  border-color: #153e65;
 }
 
-/* ================= RESUMEN MÓVIL DEL CENTRO ================= */
-.mobile-summary-card {
-  background: #ffffff;
-  border-top: 2px solid #cbd5e1;
-  padding: 0.85rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.mobile-summary-card.hidden {
-  display: none !important;
-}
-
-.mob-sum-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.84rem;
+table.asistencia-tabla thead tr.thead-sub-row th {
+  background: #0F2F52;
+  color: #e8f0f7;
   font-weight: 700;
-  color: #0f172a;
+  font-size: 0.73rem;
+  padding: 0.35rem 0.2rem;
+  border-color: #0b223c;
 }
 
-.mob-sum-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-md);
-  padding: 0.5rem;
-  text-align: center;
-}
-
-.mob-sum-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.mob-sum-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.mob-sum-val {
-  font-size: 1.05rem;
+table.asistencia-tabla thead tr.thead-sub-row th.col-t {
+  background: #091e36;
+  color: #ffd700;
   font-weight: 800;
-  color: #0f172a;
-  font-variant-numeric: tabular-nums;
 }
 
-.btn-lg-mobile {
-  width: 100%;
-  height: 46px;
-  font-size: 0.96rem;
+/* COLUMNA MODALIDAD FIJA (STICKY) */
+table.asistencia-tabla .col-modalidad {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #ffffff;
+  text-align: left !important;
+  padding-left: 0.75rem !important;
   font-weight: 700;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.22);
+  color: #0f2f52;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  font-size: 0.84rem;
+}
+
+table.asistencia-tabla thead th.col-modalidad {
+  background: #1B4B7A !important;
+  color: #ffffff !important;
+  z-index: 10;
+}
+
+table.asistencia-tabla tfoot td.col-modalidad {
+  background: #0F2F52 !important;
+  color: #ffffff !important;
+  z-index: 5;
+}
+
+table.asistencia-tabla .col-turno {
+  white-space: nowrap;
+  font-size: 0.74rem;
+  color: #475569;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* CELDAS Y CASILLAS TIPO EL CUÁ */
+.cua-input {
+  width: 48px;
+  height: 36px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 6px;
+  box-sizing: border-box;
+  outline: none;
+  margin: 0 auto;
+  display: block;
+  font-family: inherit;
+  transition: all 0.15s ease;
   touch-action: manipulation;
 }
 
-/* ================= TABLA NER COMPACTA (UNA SOLA PÁGINA) ================= */
+/* Quitar flechas spin de inputs numéricos */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] { 
+  -moz-appearance: textfield; 
+}
+
+/* 1. MATRÍCULA (AMARILLO CREMA) */
+table.asistencia-tabla td.mat {
+  background: #FFFDF5;
+}
+
+.mat-input {
+  background: #FFFBEA;
+  border: 1.5px solid #E2D2A9;
+  color: #6b4f00;
+}
+
+.mat-input:focus {
+  background: #ffffff;
+  border-color: #C9971E;
+  box-shadow: 0 0 0 2.5px rgba(201, 151, 30, 0.25);
+}
+
+/* 2. ASISTENCIA DE HOY (VERDE SUAVE) */
+table.asistencia-tabla td.asist {
+  background: #F4FAF6;
+}
+
+.asist-input {
+  background: #E6F4EA;
+  border: 1.5px solid #A8D5B8;
+  color: #166534;
+}
+
+.asist-input:focus {
+  background: #ffffff;
+  border-color: #2F7A4F;
+  box-shadow: 0 0 0 2.5px rgba(47, 122, 79, 0.25);
+}
+
+/* 3. DOCENTES JUSTIFICADOS / INJUSTIFICADOS (DORADO SUAVE) */
+table.asistencia-tabla td.doc {
+  background: #FAF7EF;
+}
+
+.doc-input {
+  background: #F6ECD3;
+  border: 1.5px solid #dfcf9b;
+  color: #6e4f07;
+}
+
+.doc-input:focus {
+  background: #ffffff;
+  border-color: #b88614;
+  box-shadow: 0 0 0 2.5px rgba(184, 134, 20, 0.25);
+}
+
+/* 4. TOTALES Y CÁLCULOS (GRIS NEUTRO PROTEGIDO) */
+table.asistencia-tabla td.calc {
+  background: #F8FAFC;
+}
+
+.calc-input {
+  background: #F4F6F8;
+  border: 1.5px solid #D8DEE4;
+  color: #24303e;
+  font-weight: 800;
+  cursor: default;
+  user-select: none;
+}
+
+.calc-input.bold-total {
+  color: #0f2f52;
+  font-weight: 900;
+  background: #eaeff5;
+}
+
+/* ESTADO DE ERROR DE ENTRADA (ROJO) */
+.cua-input.input-error {
+  background-color: #FBE9E5 !important;
+  border: 2px solid #B3402A !important;
+  color: #B3402A !important;
+  box-shadow: 0 0 0 2.5px rgba(179, 64, 42, 0.25) !important;
+  font-weight: 900;
+}
+
+/* ESTADO BLOQUEADO CUANDO NO HAY DOCENTES (ASISTENCIA DOCENTE = 0) */
+.cua-input.input-zero-locked {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+/* BADGE DE PORCENTAJE */
+.pct-cell-badge {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.25rem 0.45rem;
+  border-radius: 9999px;
+  min-width: 48px;
+  text-align: center;
+}
+
+.pct-high { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.pct-med { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.pct-low { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+/* FILA DE TOTALES AL PIE */
+table.asistencia-tabla tfoot tr.tfoot-totals-row {
+  background: #0F2F52;
+  color: #ffffff;
+  font-weight: 800;
+  border-top: 2px solid #0F2F52;
+}
+
+table.asistencia-tabla tfoot tr.tfoot-totals-row td {
+  border-color: #1e40af;
+  padding: 0.55rem 0.25rem;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.tfoot-total-val {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.tfoot-total-val.highlight-total {
+  background: #091e36;
+  color: #ffd700;
+  font-weight: 900;
+}
+
+/* ================= PANEL DE ACCIONES INFERIOR (GUARDAR ESTILO EL CUÁ) ================= */
+.save-actions-panel {
+  padding: 1.25rem 1rem;
+  background: #ffffff;
+  border-top: 1.5px solid #d8dee4;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.btn-primary-cua {
+  background: #1B4B7A;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(27, 75, 122, 0.25);
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 440px;
+  touch-action: manipulation;
+}
+
+.btn-primary-cua:hover {
+  background: #0F2F52;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 47, 82, 0.32);
+}
+
+.btn-primary-cua:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.cua-note {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+  max-width: 620px;
+}
+
+/* ================= TABLA GENERAL (VISTA DIRECCIÓN) ================= */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.table-responsive.hidden {
-  display: none !important;
 }
 
 /* Columna Fija en Tabla para deslizar sin perderse */
@@ -1493,11 +1474,6 @@ body {
 @media (max-width: 380px) {
   .schools-tiles-grid {
     grid-template-columns: 1fr;
-  }
-
-  .mob-sum-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
   }
 
   .admin-actions {

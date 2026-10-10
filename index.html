@@ -99,116 +99,74 @@
         </div>
       </div>
 
-      <!-- CUADRO CONSOLIDADO COMPACTO DE LA ESCUELA SELECCIONADA -->
-      <div class="card main-table-card">
+      <!-- CUADRO DE ASISTENCIA DIARIA DEL CENTRO EDUCATIVO (ESTILO EL CUÁ) -->
+      <div class="card main-table-card" id="cardAreaAsistencia">
         <div class="card-header table-card-header">
           <div class="school-info-heading">
             <span class="school-code-tag" id="teacherCurrentCode">Cód: -----</span>
-            <h2 id="teacherTableTitle">Centro Educativo</h2>
-            <span class="tag-status" id="teacherSavedStatusBadge">⏳ Pendiente</span>
+            <div>
+              <h2 id="teacherTableTitle">Centro Educativo</h2>
+              <p class="school-header-sub" id="teacherSubtitle">NER Estrella de Belén · Matrícula y asistencia diaria</p>
+            </div>
           </div>
           <div class="header-right-actions">
-            <button class="btn btn-success" id="btnSaveAttendanceDocente" onclick="window.app.saveCurrentSchoolAttendance()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-              Guardar Asistencia de Hoy
-            </button>
+            <span class="tag-status" id="teacherSavedStatusBadge">⏳ Pendiente</span>
           </div>
         </div>
 
-        <!-- SELECTOR DE VISTA: TARJETAS MÓVILES (INTUITIVO PARA CELULARES) O TABLA COMPLETA -->
-        <div class="view-mode-selector-bar">
-          <div class="view-mode-tabs">
-            <button type="button" class="btn-tab-mode active" id="btnModeCards" onclick="window.app.setTeacherViewMode('cards')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-              <span>Vista Móvil (Tarjetas)</span>
-            </button>
-            <button type="button" class="btn-tab-mode" id="btnModeTable" onclick="window.app.setTeacherViewMode('table')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"></path></svg>
-              <span>Vista Tabla</span>
-            </button>
-          </div>
-          <div class="table-scroll-hint hidden" id="tableScrollHint">
-            <span>↔️ Desliza horizontalmente la tabla para ver más columnas</span>
-          </div>
+        <!-- LEYENDA CON CÓDIGO DE COLORES TIPO EL CUÁ -->
+        <div class="leyenda-cua">
+          <span><span class="box-legend mat-color"></span> Matrícula (editable)</span>
+          <span><span class="box-legend asist-color"></span> Asistencia de hoy</span>
+          <span><span class="box-legend doc-color"></span> Docentes justif. / injustif.</span>
+          <span><span class="box-legend calc-color"></span> Totales calculados</span>
+        </div>
+
+        <div class="table-scroll-hint-bar">
+          <span>↔️ Desliza horizontalmente la tabla para completar Asistencia y Docentes</span>
         </div>
 
         <div class="card-body p-0">
-          <!-- 1. VISTA MÓVIL: TARJETAS INTUITIVAS POR MODALIDAD -->
-          <div class="teacher-cards-container" id="teacherCardsContainer">
-            <!-- Se inyectan dinámicamente las tarjetas táctiles de cada modalidad -->
-          </div>
-
-          <!-- 2. RESUMEN MÓVIL Y BOTÓN GUARDAR (SOLO EN MODO TARJETAS MÓVILES) -->
-          <div class="mobile-summary-card" id="teacherMobileSummaryCard">
-            <div class="mob-sum-header">
-              <span>📊 Resumen del Centro</span>
-              <span id="mobileSummaryStatusBadge" class="tag-status">⏳ Pendiente</span>
-            </div>
-            <div class="mob-sum-grid">
-              <div class="mob-sum-item">
-                <span class="mob-sum-label">Matrícula</span>
-                <span class="mob-sum-val" id="mobileSummaryTotMat">0</span>
-              </div>
-              <div class="mob-sum-item">
-                <span class="mob-sum-label">Asistencia</span>
-                <span class="mob-sum-val text-green" id="mobileSummaryTotAsist">0</span>
-              </div>
-              <div class="mob-sum-item">
-                <span class="mob-sum-label">% Asist.</span>
-                <span id="mobileSummaryTotPct" class="pct-cell-badge pct-high">0.0%</span>
-              </div>
-              <div class="mob-sum-item">
-                <span class="mob-sum-label">Docentes</span>
-                <span class="mob-sum-val" id="mobileSummaryTotDoc">0</span>
-              </div>
-            </div>
-            <button class="btn btn-success btn-lg-mobile" onclick="window.app.saveCurrentSchoolAttendance()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-              Guardar Asistencia de Hoy
-            </button>
-          </div>
-
-          <!-- 3. VISTA TABLA CLÁSICA COMPACTA (CON COLUMNA FIJA) -->
-          <div class="table-responsive hidden" id="teacherTableResponsive">
-            <table class="ner-table ner-table-compact" id="teacherAttendanceTable">
+          <div class="tabla-wrap">
+            <table class="asistencia-tabla" id="teacherAttendanceTable">
               <thead>
                 <!-- NIVEL 1 DE ENCABEZADOS -->
-                <tr class="thead-main-row">
-                  <th rowspan="2" class="th-modalidad">Modalidad</th>
-                  <th rowspan="2" class="th-turno">Turno</th>
-                  <th colspan="3" class="th-group th-matricula">Matrícula Actual</th>
-                  <th colspan="3" class="th-group th-asistencia">Asistencia Estudiantes</th>
-                  <th rowspan="2" class="th-pct">% Asist.</th>
-                  <th colspan="3" class="th-group th-doc-asist">Docentes Asistieron</th>
-                  <th colspan="3" class="th-group th-doc-just">Docentes Justificados</th>
-                  <th colspan="3" class="th-group th-doc-injust">Docentes Injustificados</th>
+                <tr class="thead-main-row grupo">
+                  <th rowspan="2" class="col-modalidad">Modalidad</th>
+                  <th rowspan="2" class="col-turno">Turno</th>
+                  <th colspan="3" class="th-group-mat">Matrícula</th>
+                  <th colspan="3" class="th-group-asist">Asistencia de hoy</th>
+                  <th rowspan="2" class="th-group-pct">% Asist.</th>
+                  <th colspan="3" class="th-group-doc-asist">Docentes asistieron</th>
+                  <th colspan="3" class="th-group-doc-just">Docentes justificados</th>
+                  <th colspan="3" class="th-group-doc-injust">Docentes injustificados</th>
                 </tr>
                 <!-- NIVEL 2 DE ENCABEZADOS (M, F, T) -->
                 <tr class="thead-sub-row">
                   <!-- Matrícula -->
-                  <th class="col-m">M</th>
-                  <th class="col-f">F</th>
+                  <th>M</th>
+                  <th>F</th>
                   <th class="col-t">T</th>
                   <!-- Asistencia Estudiantes -->
-                  <th class="col-m">M</th>
-                  <th class="col-f">F</th>
+                  <th>M</th>
+                  <th>F</th>
                   <th class="col-t">T</th>
                   <!-- Docentes Asistencia -->
-                  <th class="col-m">M</th>
-                  <th class="col-f">F</th>
+                  <th>M</th>
+                  <th>F</th>
                   <th class="col-t">T</th>
                   <!-- Docentes Justificados -->
-                  <th class="col-m">M</th>
-                  <th class="col-f">F</th>
+                  <th>M</th>
+                  <th>F</th>
                   <th class="col-t">T</th>
                   <!-- Docentes Injustificados -->
-                  <th class="col-m">M</th>
-                  <th class="col-f">F</th>
+                  <th>M</th>
+                  <th>F</th>
                   <th class="col-t">T</th>
                 </tr>
               </thead>
               <tbody id="teacherTableBody">
-                <!-- Se inyectan las filas compactas según la escuela seleccionada -->
+                <!-- Se inyectan las filas según la escuela seleccionada -->
               </tbody>
               <tfoot>
                 <tr class="tfoot-totals-row" id="teacherTableFooter">
@@ -219,12 +177,14 @@
           </div>
         </div>
 
-        <div class="card-footer-info">
-          <div class="info-inline">
-            <span class="bullet-dot"></span>
-            <span><strong>Regla Oficial:</strong> La Asistencia no puede superar a la Matrícula. Las casillas <strong>Total (T)</strong> son inalterables. Cada día a las 00:00 hrs la matrícula actual se restablece a la matrícula oficial guardada en Dirección.</span>
-          </div>
+        <!-- PANEL DE GUARDADO ESTILO EL CUÁ -->
+        <div class="save-actions-panel">
+          <button class="btn-primary-cua" id="btnSaveAttendanceDocente" onclick="window.app.saveCurrentSchoolAttendance()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Guardar Asistencia de Hoy
+          </button>
           <div id="saveFeedbackText" class="save-status-msg"></div>
+          <p class="cua-note">La asistencia se recibe hasta las 2:30 p.m. A las 00:00 hrs la matrícula actual se restablece automáticamente a la matrícula oficial guardada en Dirección.</p>
         </div>
       </div>
     </div>
