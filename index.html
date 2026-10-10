@@ -122,58 +122,93 @@
           <span><span class="box-legend calc-color"></span> Totales calculados</span>
         </div>
 
-        <div class="table-scroll-hint-bar">
-          <span>↔️ Desliza horizontalmente la tabla para completar Asistencia y Docentes</span>
+        <!-- 1. VISTA ESCRITORIO / PANTALLAS ANCHAS (> 768px): TABLA COMPLETA OFICIAL -->
+        <div id="desktopAttendanceView">
+          <div class="table-scroll-hint-bar">
+            <span>↔️ Desliza horizontalmente la tabla para completar Asistencia y Docentes</span>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="tabla-wrap">
+              <table class="asistencia-tabla" id="teacherAttendanceTable">
+                <thead>
+                  <!-- NIVEL 1 DE ENCABEZADOS -->
+                  <tr class="thead-main-row grupo">
+                    <th rowspan="2" class="col-modalidad">Modalidad</th>
+                    <th rowspan="2" class="col-turno">Turno</th>
+                    <th colspan="3" class="th-group-mat">Matrícula</th>
+                    <th colspan="3" class="th-group-asist">Asistencia de hoy</th>
+                    <th rowspan="2" class="th-group-pct">% Asist.</th>
+                    <th colspan="3" class="th-group-doc-asist">Docentes asistieron</th>
+                    <th colspan="3" class="th-group-doc-just">Docentes justificados</th>
+                    <th colspan="3" class="th-group-doc-injust">Docentes injustificados</th>
+                  </tr>
+                  <!-- NIVEL 2 DE ENCABEZADOS (M, F, T) -->
+                  <tr class="thead-sub-row">
+                    <!-- Matrícula -->
+                    <th>M</th>
+                    <th>F</th>
+                    <th class="col-t">T</th>
+                    <!-- Asistencia Estudiantes -->
+                    <th>M</th>
+                    <th>F</th>
+                    <th class="col-t">T</th>
+                    <!-- Docentes Asistencia -->
+                    <th>M</th>
+                    <th>F</th>
+                    <th class="col-t">T</th>
+                    <!-- Docentes Justificados -->
+                    <th>M</th>
+                    <th>F</th>
+                    <th class="col-t">T</th>
+                    <!-- Docentes Injustificados -->
+                    <th>M</th>
+                    <th>F</th>
+                    <th class="col-t">T</th>
+                  </tr>
+                </thead>
+                <tbody id="teacherTableBody">
+                  <!-- Se inyectan las filas según la escuela seleccionada -->
+                </tbody>
+                <tfoot>
+                  <tr class="tfoot-totals-row" id="teacherTableFooter">
+                    <!-- Totales calculados automáticamente de la escuela -->
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <div class="card-body p-0">
-          <div class="tabla-wrap">
-            <table class="asistencia-tabla" id="teacherAttendanceTable">
-              <thead>
-                <!-- NIVEL 1 DE ENCABEZADOS -->
-                <tr class="thead-main-row grupo">
-                  <th rowspan="2" class="col-modalidad">Modalidad</th>
-                  <th rowspan="2" class="col-turno">Turno</th>
-                  <th colspan="3" class="th-group-mat">Matrícula</th>
-                  <th colspan="3" class="th-group-asist">Asistencia de hoy</th>
-                  <th rowspan="2" class="th-group-pct">% Asist.</th>
-                  <th colspan="3" class="th-group-doc-asist">Docentes asistieron</th>
-                  <th colspan="3" class="th-group-doc-just">Docentes justificados</th>
-                  <th colspan="3" class="th-group-doc-injust">Docentes injustificados</th>
-                </tr>
-                <!-- NIVEL 2 DE ENCABEZADOS (M, F, T) -->
-                <tr class="thead-sub-row">
-                  <!-- Matrícula -->
-                  <th>M</th>
-                  <th>F</th>
-                  <th class="col-t">T</th>
-                  <!-- Asistencia Estudiantes -->
-                  <th>M</th>
-                  <th>F</th>
-                  <th class="col-t">T</th>
-                  <!-- Docentes Asistencia -->
-                  <th>M</th>
-                  <th>F</th>
-                  <th class="col-t">T</th>
-                  <!-- Docentes Justificados -->
-                  <th>M</th>
-                  <th>F</th>
-                  <th class="col-t">T</th>
-                  <!-- Docentes Injustificados -->
-                  <th>M</th>
-                  <th>F</th>
-                  <th class="col-t">T</th>
-                </tr>
-              </thead>
-              <tbody id="teacherTableBody">
-                <!-- Se inyectan las filas según la escuela seleccionada -->
-              </tbody>
-              <tfoot>
-                <tr class="tfoot-totals-row" id="teacherTableFooter">
-                  <!-- Totales calculados automáticamente de la escuela -->
-                </tr>
-              </tfoot>
-            </table>
+        <!-- 2. VISTA TELÉFONO (<= 768px): TABLAS SEPARADAS POR CADA MODALIDAD, ADAPTADAS Y GRANDES -->
+        <div id="mobileAttendanceView">
+          <div class="mobile-tables-container" id="teacherMobileTablesContainer">
+            <!-- Se inyecta una tabla limpia y vertical por cada modalidad -->
+          </div>
+
+          <!-- RESUMEN GENERAL DE LA ESCUELA EN TELÉFONO -->
+          <div class="mobile-summary-card" id="teacherMobileSummaryBar">
+            <div class="mob-sum-header">
+              <span>📊 Totales de la Escuela Hoy</span>
+            </div>
+            <div class="mob-sum-grid">
+              <div class="mob-sum-item">
+                <span class="mob-sum-label">Matrícula</span>
+                <span class="mob-sum-val" id="mobSummaryTotalMat">0</span>
+              </div>
+              <div class="mob-sum-item">
+                <span class="mob-sum-label">Asistencia</span>
+                <span class="mob-sum-val text-green" id="mobSummaryTotalAsist">0</span>
+              </div>
+              <div class="mob-sum-item">
+                <span class="mob-sum-label">% Asist.</span>
+                <span id="mobSummaryTotalPct" class="pct-cell-badge pct-high">0.0%</span>
+              </div>
+              <div class="mob-sum-item">
+                <span class="mob-sum-label">Docentes</span>
+                <span class="mob-sum-val" id="mobSummaryTotalDoc">0</span>
+              </div>
+            </div>
           </div>
         </div>
 

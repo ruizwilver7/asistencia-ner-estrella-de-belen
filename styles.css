@@ -503,6 +503,24 @@ body {
   border-color: #D8DEE4;
 }
 
+/* ================= CONMUTACIÓN VISTA ESCRITORIO VS TELÉFONO ================= */
+#desktopAttendanceView {
+  display: block;
+}
+
+#mobileAttendanceView {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #desktopAttendanceView {
+    display: none !important;
+  }
+  #mobileAttendanceView {
+    display: block !important;
+  }
+}
+
 .table-scroll-hint-bar {
   padding: 0.45rem 1rem;
   background: #eff6ff;
@@ -757,6 +775,235 @@ table.asistencia-tabla tfoot tr.tfoot-totals-row td {
   background: #091e36;
   color: #ffd700;
   font-weight: 900;
+}
+
+/* ================= VISTA TELÉFONO: TABLAS SEPARADAS POR CADA MODALIDAD ================= */
+.mobile-tables-container {
+  padding: 0.85rem 0.65rem;
+  background: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.mobile-modality-block {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mobile-modality-block:focus-within {
+  border-color: #1b4b7a;
+  box-shadow: 0 4px 14px rgba(27, 75, 122, 0.16);
+}
+
+.mob-mod-header {
+  background: #1B4B7A;
+  color: #ffffff;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mob-mod-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1 1 auto;
+}
+
+.mob-mod-badge {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ffd700;
+  letter-spacing: 0.05em;
+}
+
+.mob-mod-name {
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.mob-mod-meta-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mob-mod-turno {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.mob-zero-doc-alert {
+  background: #fffbeb;
+  border-bottom: 1.5px solid #fde68a;
+  color: #92400e;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  line-height: 1.35;
+}
+
+.mob-table-card {
+  padding: 0.4rem 0.45rem 0.75rem 0.45rem;
+  background: #ffffff;
+}
+
+/* SUB-TABLA DE LA MODALIDAD */
+table.mob-subtabla {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.82rem;
+  text-align: center;
+  background: #ffffff;
+}
+
+table.mob-subtabla th {
+  background: #0F2F52;
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.5rem 0.2rem;
+  border: 1px solid #1B4B7A;
+}
+
+table.mob-subtabla th.mob-th-concepto {
+  width: 37%;
+  text-align: left;
+  padding-left: 0.55rem;
+}
+
+table.mob-subtabla th.mob-th-m,
+table.mob-subtabla th.mob-th-f,
+table.mob-subtabla th.mob-th-t {
+  width: 21%;
+}
+
+table.mob-subtabla td {
+  border: 1px solid #d8dee4;
+  padding: 0.4rem 0.2rem;
+  vertical-align: middle;
+}
+
+table.mob-subtabla td.mob-td-label {
+  text-align: left;
+  padding-left: 0.5rem;
+}
+
+.mob-td-label strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #0f2f52;
+  line-height: 1.2;
+}
+
+.mob-td-label small {
+  display: block;
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.mob-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.mob-dot.mat-dot { background: #eab308; }
+.mob-dot.asist-dot { background: #16a34a; }
+.mob-dot.doc-asist-dot { background: #3b82f6; }
+.mob-dot.doc-dot { background: #f59e0b; }
+
+/* FILAS TEMÁTICAS */
+tr.mob-row-mat { background: #FFFDF5; }
+tr.mob-row-asist { background: #F4FAF6; }
+tr.mob-row-doc-asist { background: #F8FAFC; }
+tr.mob-row-doc-just { background: #FAF7EF; }
+tr.mob-row-doc-injust { background: #FAF7EF; }
+
+/* CASILLAS TÁCTILES AMPLIAS PARA CELULAR */
+.mob-input {
+  width: 100% !important;
+  height: 44px !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  border-radius: 6px !important;
+  touch-action: manipulation;
+  box-sizing: border-box;
+}
+
+/* RESUMEN MÓVIL DEL CENTRO */
+.mobile-summary-card {
+  background: #ffffff;
+  border-top: 2px solid #cbd5e1;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mob-sum-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.mob-sum-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 0.55rem;
+  text-align: center;
+}
+
+.mob-sum-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mob-sum-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.mob-sum-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ================= PANEL DE ACCIONES INFERIOR (GUARDAR ESTILO EL CUÁ) ================= */
