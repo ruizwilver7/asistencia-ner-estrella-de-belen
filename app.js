@@ -196,7 +196,8 @@
     DAILY_ATTENDANCE: 'ner_daily_attendance_v3',
     LAST_ACTIVE_DATE: 'ner_last_active_date_v3',
     AUTOSAVED_LOG: 'ner_autosaved_log_v3',
-    GOOGLE_SHEET_URL: 'ner_google_sheet_url_v1'
+    GOOGLE_SHEET_URL: 'ner_google_sheet_url_v1',
+    MANUAL_LOCK_MODE: 'ner_manual_lock_mode_v3'
   };
 
   // URL oficial de sincronización en la nube con Google Sheets
@@ -210,6 +211,7 @@
     selectedSchoolId: '17692',
     currentDateStr: '',
     isLocked: false,
+    manualLockMode: 'auto', // 'auto' (sigue reloj 2:30 PM), 'unlocked' (forzado abierto por Dir), 'locked' (forzado cerrado por Dir)
     currentRole: 'docente', // 'docente' o 'admin'
     adminEditMatricula: false,
     dailyAttendance: {},
@@ -226,6 +228,7 @@
     loadBaseConfig();
     updateDateAndCheckMidnightReset();
     loadStoredDailyData();
+    loadManualLockConfig();
     initCloudConfig();
     setupClockTimer();
     setupCloudAutoSyncTimer();
@@ -278,10 +281,25 @@
     if (lastDate && lastDate !== todayStr) {
       console.log(`Nuevo día detectado (${todayStr}). Restableciendo Matrícula Actual a la matrícula oficial de Dirección.`);
       showToast(`Nuevo día escolar (${todayStr}). Matrícula restablecida a los valores oficiales de Dirección.`);
+      state.manualLockMode = 'auto';
+      localStorage.removeItem(STORAGE_KEYS.MANUAL_LOCK_MODE);
     }
 
     state.currentDateStr = todayStr;
     localStorage.setItem(STORAGE_KEYS.LAST_ACTIVE_DATE, todayStr);
+  }
+
+  function loadManualLockConfig() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.MANUAL_LOCK_MODE);
+      if (saved === 'locked' || saved === 'unlocked' || saved === 'auto') {
+        state.manualLockMode = saved;
+      } else {
+        state.manualLockMode = 'auto';
+      }
+    } catch (e) {
+      state.manualLockMode = 'auto';
+    }
   }
 
   function loadStoredDailyData() {
@@ -391,6 +409,19 @@
           }
         }
 
+        // 3. Sincronizar estado de bloqueo del sistema desde la nube
+        if (remoteState.manualLockMode !== undefined && remoteState.manualLockMode !== null) {
+          if (state.manualLockMode !== remoteState.manualLockMode) {
+            state.manualLockMode = remoteState.manualLockMode;
+            if (state.manualLockMode === 'auto') {
+              localStorage.removeItem(STORAGE_KEYS.MANUAL_LOCK_MODE);
+            } else {
+              localStorage.setItem(STORAGE_KEYS.MANUAL_LOCK_MODE, state.manualLockMode);
+            }
+            checkTimeLockout();
+          }
+        }
+
         const nowTime = new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', hour12: true });
         state.lastCloudSyncTime = nowTime;
         updateCloudSyncBadge('synced', `Nube: Al día (${nowTime})`);
@@ -495,7 +526,8 @@
       syncState: {
         schools: state.schools,
         dailyAttendance: state.dailyAttendance,
-        lastActiveDate: state.currentDateStr
+        lastActiveDate: state.currentDateStr,
+        manualLockMode: state.manualLockMode
       }
     };
 
@@ -539,7 +571,8 @@
       syncState: {
         schools: state.schools,
         dailyAttendance: state.dailyAttendance,
-        lastActiveDate: state.currentDateStr
+        lastActiveDate: state.currentDateStr,
+        manualLockMode: state.manualLockMode
       }
     };
 
@@ -611,7 +644,8 @@
   }
 
   /**
-   * Cierre automático a las 2:30 PM (14:30) y DESCARGA AUTOMÁTICA DE EXCEL
+   * Control de bloqueo del sistema: Soporta modo Automático (Límite 2:30 PM),
+   * y Modo Manual desde Dirección (Desbloqueo forzado o Bloqueo forzado).
    */
   function checkTimeLockout() {
     const now = getEffectiveCurrentTime();
@@ -619,27 +653,57 @@
     const minutes = now.getMinutes();
 
     const isPastDeadline = hours > 14 || (hours === 14 && minutes >= 30);
-    const wasAlreadyLocked = state.isLocked;
-    state.isLocked = isPastDeadline;
+
+    let isLockedEffective = false;
+    let lockReason = '';
+
+    if (state.manualLockMode === 'locked') {
+      isLockedEffective = true;
+      lockReason = 'manual_locked';
+    } else if (state.manualLockMode === 'unlocked') {
+      isLockedEffective = false;
+      lockReason = 'manual_unlocked';
+    } else {
+      isLockedEffective = isPastDeadline;
+      lockReason = isPastDeadline ? 'auto_deadline' : 'auto_open';
+    }
+
+    state.isLocked = isLockedEffective;
 
     const badge = document.getElementById('systemLockBadge');
     const badgeText = document.getElementById('systemStatusText');
     const lockBanner = document.getElementById('lockBanner');
+    const lockBannerTitle = document.getElementById('lockBannerTitle');
     const saveBtn = document.getElementById('btnSaveAttendanceDocente');
 
     if (state.isLocked) {
-      badge.className = 'status-indicator-badge closed';
-      badgeText.textContent = 'Cerrado (Límite 2:30 PM)';
-      lockBanner.classList.remove('hidden');
+      if (badge) badge.className = 'status-indicator-badge closed';
+      if (badgeText) {
+        badgeText.textContent = lockReason === 'manual_locked' ? 'Cerrado (Por Dirección)' : 'Cerrado (Límite 2:30 PM)';
+      }
+      if (lockBanner) {
+        lockBanner.classList.remove('hidden');
+        if (lockBannerTitle) {
+          lockBannerTitle.textContent = lockReason === 'manual_locked'
+            ? 'SISTEMA CERRADO MANUALMENTE POR DIRECCIÓN'
+            : 'SISTEMA CERRADO POR EL DÍA DE HOY (Horario límite: 2:30 PM)';
+        }
+      }
       updateLockBannerRole();
       if (saveBtn) saveBtn.disabled = true;
 
-      // DESCARGA AUTOMÁTICA DE EXCEL A LAS 2:30 PM
-      triggerAutomaticDailyExcelSave();
+      // DESCARGA AUTOMÁTICA DE EXCEL A LAS 2:30 PM (solo en cierre automático)
+      if (lockReason === 'auto_deadline') {
+        triggerAutomaticDailyExcelSave();
+      }
     } else {
-      badge.className = 'status-indicator-badge open';
-      badgeText.textContent = 'Abierto para Registro';
-      lockBanner.classList.add('hidden');
+      if (badge) badge.className = 'status-indicator-badge open';
+      if (badgeText) {
+        badgeText.textContent = lockReason === 'manual_unlocked'
+          ? 'Abierto (Desbloqueado por Dirección)'
+          : 'Abierto para Registro';
+      }
+      if (lockBanner) lockBanner.classList.add('hidden');
       if (saveBtn) saveBtn.disabled = false;
     }
 
@@ -653,6 +717,105 @@
         }
       }
     });
+
+    updateAdminLockControlsUI();
+  }
+
+  /**
+   * Actualiza el botón e indicador de bloqueo/desbloqueo manual en el Panel de Dirección
+   */
+  function updateAdminLockControlsUI() {
+    const badge = document.getElementById('adminLockModeBadge');
+    const btn = document.getElementById('btnToggleManualLock');
+    const btnText = document.getElementById('adminLockBtnText');
+    const icon = document.getElementById('adminLockBtnIcon');
+    const resetBtn = document.getElementById('btnResetAutoLock');
+
+    if (!btn || !btnText) return;
+
+    if (state.isLocked) {
+      btn.className = 'btn btn-success';
+      btnText.textContent = '🔓 Desbloquear Sistema (Abrir Registro)';
+      if (icon) {
+        icon.innerHTML = '<path d="M7 11V7a5 5 0 0 1 9.9-1"></path><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>';
+      }
+      if (badge) {
+        if (state.manualLockMode === 'locked') {
+          badge.textContent = 'Estado: Cerrado Manualmente por Dirección';
+          badge.className = 'admin-lock-badge-info badge-locked-manual';
+        } else {
+          badge.textContent = 'Estado: Cerrado Automático (Horario 2:30 PM)';
+          badge.className = 'admin-lock-badge-info badge-locked-auto';
+        }
+      }
+    } else {
+      btn.className = 'btn btn-danger';
+      btnText.textContent = '🔒 Bloquear Sistema Manualmente';
+      if (icon) {
+        icon.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+      }
+      if (badge) {
+        if (state.manualLockMode === 'unlocked') {
+          badge.textContent = 'Estado: Abierto Manualmente por Dirección';
+          badge.className = 'admin-lock-badge-info badge-unlocked-manual';
+        } else {
+          badge.textContent = 'Estado: Horario Automático (Abierto)';
+          badge.className = 'admin-lock-badge-info badge-open-auto';
+        }
+      }
+    }
+
+    if (resetBtn) {
+      if (state.manualLockMode !== 'auto') {
+        resetBtn.classList.remove('hidden');
+      } else {
+        resetBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  function toggleManualSystemLock() {
+    if (state.isLocked) {
+      state.manualLockMode = 'unlocked';
+      localStorage.setItem(STORAGE_KEYS.MANUAL_LOCK_MODE, 'unlocked');
+      showToast('🔓 Sistema DESBLOQUEADO por Dirección. Se ha habilitado el registro de asistencia.');
+    } else {
+      state.manualLockMode = 'locked';
+      localStorage.setItem(STORAGE_KEYS.MANUAL_LOCK_MODE, 'locked');
+      showToast('🔒 Sistema BLOQUEADO manualmente por Dirección. El registro ha sido cerrado.');
+    }
+    checkTimeLockout();
+    syncLockStateToCloud();
+  }
+
+  function resetSystemLockToAuto() {
+    state.manualLockMode = 'auto';
+    localStorage.removeItem(STORAGE_KEYS.MANUAL_LOCK_MODE);
+    showToast('⏰ Sistema restablecido al horario automático normal (límite 2:30 PM).');
+    checkTimeLockout();
+    syncLockStateToCloud();
+  }
+
+  async function syncLockStateToCloud() {
+    if (!state.cloudUrl) return;
+    try {
+      const payload = {
+        action: 'syncLockMode',
+        syncState: {
+          schools: state.schools,
+          dailyAttendance: state.dailyAttendance,
+          lastActiveDate: state.currentDateStr,
+          manualLockMode: state.manualLockMode
+        }
+      };
+      await fetch(state.cloudUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      console.warn('Error al sincronizar estado de bloqueo con la nube:', e);
+    }
   }
 
   /**
@@ -2493,7 +2656,9 @@
     downloadDailyExcel,
     saveGoogleCloudUrl,
     toggleCloudInstructions,
-    triggerCloudSync
+    triggerCloudSync,
+    toggleManualSystemLock,
+    resetSystemLockToAuto
   };
 
   document.addEventListener('DOMContentLoaded', init);
