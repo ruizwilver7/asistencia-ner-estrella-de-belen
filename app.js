@@ -199,8 +199,8 @@
     GOOGLE_SHEET_URL: 'ner_google_sheet_url_v1'
   };
 
-  // URL por defecto en caso de pre-configuración centralizada
-  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = '';
+  // URL oficial de sincronización en la nube con Google Sheets
+  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyUiX0rfX_pHYaupOxB_aV3V3bzjut9sJxfa7BE9WE6AlspOV29Ncl655rKMKn9K0Iq/exec';
 
   const ADMIN_PIN = 'Arnel2007';
 
@@ -311,8 +311,14 @@
 
   function initCloudConfig() {
     try {
-      const savedUrl = localStorage.getItem(STORAGE_KEYS.GOOGLE_SHEET_URL) || CONFIG_DEFAULT_GOOGLE_SHEET_URL || '';
-      state.cloudUrl = savedUrl.trim();
+      let savedUrl = localStorage.getItem(STORAGE_KEYS.GOOGLE_SHEET_URL);
+      if (!savedUrl || savedUrl.trim() === '') {
+        savedUrl = CONFIG_DEFAULT_GOOGLE_SHEET_URL;
+        if (savedUrl) {
+          localStorage.setItem(STORAGE_KEYS.GOOGLE_SHEET_URL, savedUrl);
+        }
+      }
+      state.cloudUrl = (savedUrl || '').trim();
 
       const inputUrl = document.getElementById('inputGoogleWebAppUrl');
       if (inputUrl) {
