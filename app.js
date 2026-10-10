@@ -195,8 +195,12 @@
     SCHOOLS_BASE: 'ner_schools_base_v3',
     DAILY_ATTENDANCE: 'ner_daily_attendance_v3',
     LAST_ACTIVE_DATE: 'ner_last_active_date_v3',
-    AUTOSAVED_LOG: 'ner_autosaved_log_v3'
+    AUTOSAVED_LOG: 'ner_autosaved_log_v3',
+    GOOGLE_SHEET_URL: 'ner_google_sheet_url_v1'
   };
+
+  // URL por defecto en caso de pre-configuración centralizada
+  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = '';
 
   const ADMIN_PIN = 'Arnel2007';
 
@@ -209,7 +213,10 @@
     currentRole: 'docente', // 'docente' o 'admin'
     adminEditMatricula: false,
     dailyAttendance: {},
-    autoSavedLog: {} // Control de descargas automáticas por fecha
+    autoSavedLog: {}, // Control de descargas automáticas por fecha
+    cloudUrl: '',
+    cloudStatus: 'unconfigured', // 'synced', 'syncing', 'offline', 'unconfigured'
+    lastCloudSyncTime: null
   };
 
   /**
@@ -219,10 +226,19 @@
     loadBaseConfig();
     updateDateAndCheckMidnightReset();
     loadStoredDailyData();
+    initCloudConfig();
     setupClockTimer();
+    setupCloudAutoSyncTimer();
     renderSchoolsTiles();
     renderTeacherTable();
     checkTimeLockout();
+
+    // Comprobación inicial de datos en la nube (Google Sheets)
+    if (state.cloudUrl) {
+      fetchCloudData(false);
+    } else {
+      updateCloudSyncBadge('unconfigured', 'Nube: Sin Configurar (Local)');
+    }
 
     console.log('Sistema Asistencia NER Inicializado');
   }
@@ -287,6 +303,301 @@
 
   function saveAutoSavedLog() {
     localStorage.setItem(STORAGE_KEYS.AUTOSAVED_LOG, JSON.stringify(state.autoSavedLog));
+  }
+
+  /* ========================================================================== */
+  /* MÓDULO DE SINCRONIZACIÓN EN LA NUBE (GOOGLE SHEETS / GOOGLE APPS SCRIPT)   */
+  /* ========================================================================== */
+
+  function initCloudConfig() {
+    try {
+      const savedUrl = localStorage.getItem(STORAGE_KEYS.GOOGLE_SHEET_URL) || CONFIG_DEFAULT_GOOGLE_SHEET_URL || '';
+      state.cloudUrl = savedUrl.trim();
+
+      const inputUrl = document.getElementById('inputGoogleWebAppUrl');
+      if (inputUrl) {
+        inputUrl.value = state.cloudUrl;
+      }
+    } catch (e) {
+      console.warn('Error al leer URL de la nube en localStorage:', e);
+    }
+  }
+
+  function updateCloudSyncBadge(status, text) {
+    state.cloudStatus = status;
+
+    const badge = document.getElementById('cloudSyncBadge');
+    const badgeText = document.getElementById('cloudSyncText');
+    if (badge && badgeText) {
+      badge.className = `status-indicator-badge ${status}`;
+      badgeText.textContent = text;
+    }
+
+    const adminBadge = document.getElementById('adminCloudStatusBadge');
+    const adminBadgeText = document.getElementById('adminCloudStatusText');
+    if (adminBadge && adminBadgeText) {
+      adminBadge.className = `status-indicator-badge ${status}`;
+      adminBadgeText.textContent = text;
+    }
+  }
+
+  async function fetchCloudData(isManual = false) {
+    if (!state.cloudUrl) {
+      updateCloudSyncBadge('unconfigured', 'Nube: Sin Configurar (Local)');
+      if (isManual) {
+        showToast('⚠️ Ingresa y guarda la URL de Google Apps Script en el Panel de Dirección.');
+      }
+      return;
+    }
+
+    updateCloudSyncBadge('syncing', 'Nube: Sincronizando...');
+
+    try {
+      const sep = state.cloudUrl.includes('?') ? '&' : '?';
+      const fetchUrl = `${state.cloudUrl}${sep}action=getData&_nocache=${Date.now()}`;
+
+      const res = await fetch(fetchUrl);
+      const result = await res.json();
+
+      if (result && result.status === 'success' && result.data) {
+        const remoteState = result.data;
+        let changesApplied = false;
+
+        // 1. Sincronizar catálogo base oficial de escuelas (matrícula oficial y plantilla)
+        if (remoteState.schools && Array.isArray(remoteState.schools) && remoteState.schools.length > 0) {
+          state.schools = remoteState.schools;
+          saveBaseConfig();
+          changesApplied = true;
+        }
+
+        // 2. Sincronizar asistencias del día actual
+        if (remoteState.dailyAttendance && typeof remoteState.dailyAttendance === 'object') {
+          if (!state.dailyAttendance[state.currentDateStr]) {
+            state.dailyAttendance[state.currentDateStr] = {};
+          }
+          if (remoteState.dailyAttendance[state.currentDateStr]) {
+            state.dailyAttendance[state.currentDateStr] = {
+              ...state.dailyAttendance[state.currentDateStr],
+              ...remoteState.dailyAttendance[state.currentDateStr]
+            };
+            saveDailyData();
+            changesApplied = true;
+          }
+        }
+
+        const nowTime = new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', hour12: true });
+        state.lastCloudSyncTime = nowTime;
+        updateCloudSyncBadge('synced', `Nube: Al día (${nowTime})`);
+
+        const syncInfo = document.getElementById('cloudLastSyncInfo');
+        if (syncInfo) {
+          syncInfo.textContent = `Última sincronización exitosa: Hoy a las ${nowTime}`;
+        }
+
+        if (changesApplied) {
+          renderSchoolsTiles();
+          renderTeacherTable();
+          if (state.currentRole === 'admin') {
+            renderGlobalConsolidatedTable();
+          }
+        }
+
+        if (isManual) {
+          showToast(`✓ Datos sincronizados con Google Sheets (${nowTime})`);
+        }
+      } else {
+        const nowTime = new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', hour12: true });
+        state.lastCloudSyncTime = nowTime;
+        updateCloudSyncBadge('synced', `Nube: Conectado (${nowTime})`);
+
+        const syncInfo = document.getElementById('cloudLastSyncInfo');
+        if (syncInfo) {
+          syncInfo.textContent = `Conexión activa con Google Sheets (${nowTime})`;
+        }
+        if (isManual) {
+          showToast(`✓ Conexión con Google Sheets verificada correctamente.`);
+        }
+      }
+    } catch (err) {
+      console.warn('No se pudo conectar a Google Sheets:', err);
+      updateCloudSyncBadge('offline', 'Nube: Modo Local (Offline)');
+      if (isManual) {
+        showToast('⚠️ No se pudo conectar a Google Sheets. Los datos se guardan de forma segura en este dispositivo.');
+      }
+    }
+  }
+
+  async function syncToCloudDailyAttendance(school, modalitiesData, nowTimeStr) {
+    if (!state.cloudUrl) {
+      updateCloudSyncBadge('unconfigured', 'Nube: Sin Configurar (Local)');
+      return;
+    }
+
+    updateCloudSyncBadge('syncing', 'Nube: Guardando...');
+
+    const records = school.modalities.map(mod => {
+      const mData = modalitiesData[mod.id] || {};
+      const matM = mData.matM || 0;
+      const matF = mData.matF || 0;
+      const matT = matM + matF;
+      const asistM = mData.asistM || 0;
+      const asistF = mData.asistF || 0;
+      const asistT = asistM + asistF;
+      const pct = matT > 0 ? ((asistT / matT) * 100).toFixed(1) : '0.0';
+      const docAsistM = mData.docAsistM || 0;
+      const docAsistF = mData.docAsistF || 0;
+      const docAsistT = docAsistM + docAsistF;
+      const docJustM = mData.docJustM || 0;
+      const docJustF = mData.docJustF || 0;
+      const docJustT = docJustM + docJustF;
+      const docInjustM = mData.docInjustM || 0;
+      const docInjustF = mData.docInjustF || 0;
+      const docInjustT = docInjustM + docInjustF;
+
+      return {
+        schoolId: school.id,
+        schoolName: school.name,
+        modalityId: mod.id,
+        modalityName: mod.name,
+        turno: mod.turno,
+        matM,
+        matF,
+        matT,
+        asistM,
+        asistF,
+        asistT,
+        pct,
+        docAsistM,
+        docAsistF,
+        docAsistT,
+        docJustM,
+        docJustF,
+        docJustT,
+        docInjustM,
+        docInjustF,
+        docInjustT
+      };
+    });
+
+    const payload = {
+      action: 'saveDailyAttendance',
+      date: state.currentDateStr,
+      time: nowTimeStr,
+      schoolId: school.id,
+      schoolName: school.name,
+      records: records,
+      syncState: {
+        schools: state.schools,
+        dailyAttendance: state.dailyAttendance,
+        lastActiveDate: state.currentDateStr
+      }
+    };
+
+    try {
+      const res = await fetch(state.cloudUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        const timeBadge = new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', hour12: true });
+        state.lastCloudSyncTime = timeBadge;
+        updateCloudSyncBadge('synced', `Nube: Guardado (${timeBadge})`);
+
+        const feedback = document.getElementById('saveFeedbackText');
+        if (feedback) {
+          feedback.textContent = `✓ Guardado localmente y sincronizado en Google Sheets (${timeBadge})`;
+        }
+        const syncInfo = document.getElementById('cloudLastSyncInfo');
+        if (syncInfo) {
+          syncInfo.textContent = `Última sincronización exitosa: Hoy a las ${timeBadge}`;
+        }
+      } else {
+        updateCloudSyncBadge('offline', 'Nube: Guardado local (Offline)');
+      }
+    } catch (err) {
+      console.warn('Error al enviar a Google Sheets:', err);
+      updateCloudSyncBadge('offline', 'Nube: Guardado local (Offline)');
+    }
+  }
+
+  async function syncToCloudBaseConfig() {
+    if (!state.cloudUrl) return;
+
+    updateCloudSyncBadge('syncing', 'Nube: Actualizando matrícula base...');
+
+    const payload = {
+      action: 'saveBaseConfig',
+      schools: state.schools,
+      syncState: {
+        schools: state.schools,
+        dailyAttendance: state.dailyAttendance,
+        lastActiveDate: state.currentDateStr
+      }
+    };
+
+    try {
+      const res = await fetch(state.cloudUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        const timeBadge = new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', hour12: true });
+        updateCloudSyncBadge('synced', `Nube: Al día (${timeBadge})`);
+        showToast('✓ Matrículas oficiales guardadas y sincronizadas en Google Sheets.');
+      }
+    } catch (err) {
+      console.warn('Error al sincronizar base config con Google Sheets:', err);
+      updateCloudSyncBadge('offline', 'Nube: Guardado local (Offline)');
+    }
+  }
+
+  function saveGoogleCloudUrl() {
+    const input = document.getElementById('inputGoogleWebAppUrl');
+    if (!input) return;
+    const url = input.value.trim();
+    if (url && !url.startsWith('http')) {
+      showToast('⚠️ La URL debe comenzar con https://script.google.com/...');
+      return;
+    }
+
+    state.cloudUrl = url;
+    localStorage.setItem(STORAGE_KEYS.GOOGLE_SHEET_URL, url);
+
+    if (url) {
+      showToast('✓ URL guardada. Comprobando conexión con Google Sheets...');
+      fetchCloudData(true);
+    } else {
+      updateCloudSyncBadge('unconfigured', 'Nube: Sin Configurar (Local)');
+      showToast('ℹ️ Modo en la nube desactivado. Operando localmente.');
+    }
+  }
+
+  function toggleCloudInstructions() {
+    const box = document.getElementById('cloudInstructionsBox');
+    if (box) {
+      box.classList.toggle('hidden');
+    }
+  }
+
+  function triggerCloudSync(isManual = true) {
+    fetchCloudData(isManual);
+  }
+
+  function setupCloudAutoSyncTimer() {
+    // Sincronización automática periódica en segundo plano cada 2 minutos
+    setInterval(() => {
+      if (state.cloudUrl && !state.isLocked) {
+        const activeEl = document.activeElement;
+        const isEditing = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+        if (!isEditing) {
+          fetchCloudData(false);
+        }
+      }
+    }, 120000);
   }
 
   function getEffectiveCurrentTime() {
@@ -1253,6 +1564,9 @@
     }
 
     showToast(`✓ Asistencia guardada correctamente para ${school.name}`);
+
+    // Sincronizar en la nube con Google Sheets en segundo plano
+    syncToCloudDailyAttendance(school, modalitiesData, nowTimeStr);
   }
 
   /**
@@ -1376,6 +1690,9 @@
     saveBaseConfig();
     saveDailyData();
     showToast(`✓ Matrículas oficiales y plantilla docente guardadas permanentemente.`);
+
+    // Sincronizar en la nube con Google Sheets en segundo plano
+    syncToCloudBaseConfig();
   }
 
   /**
@@ -2167,7 +2484,10 @@
     saveCurrentSchoolAttendance,
     toggleAdminAccess,
     toggleAdminEditMatricula,
-    downloadDailyExcel
+    downloadDailyExcel,
+    saveGoogleCloudUrl,
+    toggleCloudInstructions,
+    triggerCloudSync
   };
 
   document.addEventListener('DOMContentLoaded', init);

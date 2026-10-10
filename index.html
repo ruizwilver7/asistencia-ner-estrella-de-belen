@@ -42,6 +42,11 @@
           <span class="live-date" id="liveDate">Cargando fecha...</span>
         </div>
 
+        <div class="status-indicator-badge unconfigured" id="cloudSyncBadge" title="Estado de conexión con Google Sheets (Clic para sincronizar)" onclick="window.app.triggerCloudSync(true)">
+          <span class="status-dot"></span>
+          <span id="cloudSyncText">Nube: Local</span>
+        </div>
+
         <div class="status-indicator-badge" id="systemLockBadge">
           <span class="status-dot"></span>
           <span id="systemStatusText">Abierto para Registro</span>
@@ -276,6 +281,64 @@
           <span class="kpi-mini-title">Docentes Asistieron</span>
           <span class="kpi-mini-val text-green" id="adminKpiDocentesAsist">0</span>
           <span class="kpi-mini-sub" id="adminKpiDocentesAusentes">0 ausentes</span>
+        </div>
+      </div>
+
+      <!-- PANEL DE CONEXIÓN CON GOOGLE SHEETS (SINCRONIZACIÓN EN LA NUBE) -->
+      <div class="card mt-3 cloud-sync-card">
+        <div class="card-header d-flex-between">
+          <div class="cloud-header-info">
+            <div class="cloud-icon-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+              <h3>Sincronización en la Nube con Google Sheets</h3>
+            </div>
+            <p class="card-sub-info">Conecta una hoja de Google Sheets para que las asistencias enviadas desde cualquier teléfono o PC se actualicen en tiempo real.</p>
+          </div>
+          <span class="status-indicator-badge unconfigured" id="adminCloudStatusBadge">
+            <span class="status-dot"></span>
+            <span id="adminCloudStatusText">Sin Configurar</span>
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="cloud-input-group">
+            <label for="inputGoogleWebAppUrl">URL de la Aplicación Web de Google Apps Script:</label>
+            <div class="cloud-input-row">
+              <input type="url" id="inputGoogleWebAppUrl" class="form-control" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocomplete="off" spellcheck="false">
+              <button class="btn btn-primary" onclick="window.app.saveGoogleCloudUrl()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Guardar y Conectar
+              </button>
+              <button class="btn btn-outline" onclick="window.app.triggerCloudSync(true)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                Sincronizar Ahora
+              </button>
+            </div>
+            <div class="cloud-help-row">
+              <span class="text-muted" id="cloudLastSyncInfo">Última comprobación: Ninguna aún.</span>
+              <a href="javascript:void(0)" class="link-instructions" onclick="window.app.toggleCloudInstructions()">
+                📖 Ver cómo crear y enlazar la hoja de Google Sheets en 2 minutos
+              </a>
+            </div>
+          </div>
+
+          <!-- INSTRUCCIONES DESPLEGABLES -->
+          <div class="cloud-instructions-box hidden" id="cloudInstructionsBox">
+            <h4>Pasos sencillos para conectar tu Google Sheets:</h4>
+            <ol>
+              <li>Entra a <a href="https://sheets.google.com" target="_blank" rel="noopener">Google Sheets</a> y crea una hoja de cálculo en blanco (ej. <em>"Asistencia NER Estrella de Belén"</em>).</li>
+              <li>En el menú superior de la hoja, haz clic en <strong>Extensiones</strong> ➔ <strong>Apps Script</strong>.</li>
+              <li>Borra el código que aparezca y pega el contenido del archivo <code>google_apps_script.js</code> que creamos en tu proyecto.</li>
+              <li>Haz clic en el botón azul <strong>Implementar</strong> ➔ <strong>Nueva implementación</strong>.</li>
+              <li>En el ícono de engranaje ⚙️ elige <strong>Aplicación web</strong>:
+                <ul>
+                  <li>Ejecutar como: <strong>Yo (tu correo)</strong></li>
+                  <li>Quién tiene acceso: <strong>Cualquier persona (Anyone)</strong></li>
+                </ul>
+              </li>
+              <li>Haz clic en <strong>Implementar</strong> y autoriza los permisos de Google.</li>
+              <li>Copia la <strong>URL de la aplicación web</strong> (termina en <code>/exec</code>) y pégala en el campo de arriba. ¡Listo!</li>
+            </ol>
+          </div>
         </div>
       </div>
 

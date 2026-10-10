@@ -162,6 +162,37 @@ body {
   border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
+.status-indicator-badge.synced {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  cursor: pointer;
+}
+
+.status-indicator-badge.syncing {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.status-indicator-badge.syncing .status-dot {
+  animation: pulse 0.9s infinite;
+}
+
+.status-indicator-badge.unconfigured {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  cursor: pointer;
+}
+
+.status-indicator-badge.offline {
+  background: rgba(156, 163, 175, 0.2);
+  color: #d1d5db;
+  border: 1px solid rgba(156, 163, 175, 0.35);
+  cursor: pointer;
+}
+
 .status-dot {
   width: 7px;
   height: 7px;
@@ -1726,6 +1757,124 @@ tr.mob-row-doc-injust { background: #FAF7EF; }
   .admin-actions {
     grid-template-columns: 1fr;
   }
+}
+
+/* ================= SINCRONIZACIÓN EN LA NUBE CON GOOGLE SHEETS ================= */
+.cloud-sync-card {
+  border-left: 4px solid #10b981;
+  background: #ffffff;
+}
+
+.cloud-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cloud-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cloud-icon-title h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.cloud-icon-title svg {
+  color: #10b981;
+}
+
+.card-sub-info {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cloud-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cloud-input-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.cloud-input-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cloud-input-row .form-control {
+  flex: 1;
+  min-width: 260px;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  font-size: 0.88rem;
+}
+
+.cloud-help-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
+
+.link-instructions {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.link-instructions:hover {
+  color: #1d4ed8;
+}
+
+.cloud-instructions-box {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+}
+
+.cloud-instructions-box h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.cloud-instructions-box ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.cloud-instructions-box li {
+  margin-bottom: 0.35rem;
+}
+
+.cloud-instructions-box code {
+  background: #e2e8f0;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.85em;
+  color: #0f172a;
 }
 
 /* ================= IMPRESIÓN ================= */
