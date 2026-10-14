@@ -688,6 +688,14 @@ table.asistencia-tabla td.mat {
   color: #6b4f00;
 }
 
+.mat-input[readonly] {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #1e293b;
+  font-weight: 700;
+  cursor: default;
+}
+
 .mat-input:focus {
   background: #ffffff;
   border-color: #C9971E;

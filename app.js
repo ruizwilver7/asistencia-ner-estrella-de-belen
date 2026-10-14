@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  // 1. CONFIGURACIÓN MAESTRA DE LOS 6 CENTROS (DATOS REALES DEL FORMATO OFICIAL DEL USUARIO)
+  // 1. CONFIGURACIÓN MAESTRA DE LOS 6 CENTROS (DATOS REALES DEL INFORME III CORTE 2026)
   const INITIAL_SCHOOLS_CONFIG = [
     {
       id: '17692',
@@ -25,8 +25,8 @@
           groupId: 'eb_pre',
           groupTitle: 'Preescolar Formal Multinivel (Turno Matutino)',
           groupIcon: '🎨',
-          baseMatM: 32,
-          baseMatF: 23,
+          baseMatM: 26,
+          baseMatF: 24,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -39,8 +39,8 @@
           groupId: 'eb_prim_mat',
           groupTitle: 'Primaria Regular: 1° y 2° Grado (Turno Matutino)',
           groupIcon: '🎒',
-          baseMatM: 25,
-          baseMatF: 19,
+          baseMatM: 20,
+          baseMatF: 22,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -52,8 +52,8 @@
           groupId: 'eb_prim_mat',
           groupTitle: 'Primaria Regular: 1° y 2° Grado (Turno Matutino)',
           groupIcon: '🎒',
-          baseMatM: 25,
-          baseMatF: 18,
+          baseMatM: 27,
+          baseMatF: 15,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -66,7 +66,7 @@
           groupId: 'eb_prim_vesp',
           groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
           groupIcon: '☀️',
-          baseMatM: 11,
+          baseMatM: 17,
           baseMatF: 15,
           baseDocM: 1,
           baseDocF: 0
@@ -79,8 +79,8 @@
           groupId: 'eb_prim_vesp',
           groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
           groupIcon: '☀️',
-          baseMatM: 11,
-          baseMatF: 16,
+          baseMatM: 13,
+          baseMatF: 15,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -92,8 +92,8 @@
           groupId: 'eb_prim_vesp',
           groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
           groupIcon: '☀️',
-          baseMatM: 10,
-          baseMatF: 15,
+          baseMatM: 9,
+          baseMatF: 17,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -105,8 +105,8 @@
           groupId: 'eb_prim_vesp',
           groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
           groupIcon: '☀️',
-          baseMatM: 11,
-          baseMatF: 16,
+          baseMatM: 10,
+          baseMatF: 12,
           baseDocM: 0,
           baseDocF: 0
         },
@@ -119,8 +119,8 @@
           groupId: 'eb_sec_mat',
           groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
           groupIcon: '📐',
-          baseMatM: 6,
-          baseMatF: 9,
+          baseMatM: 12,
+          baseMatF: 15,
           baseDocM: 1,
           baseDocF: 0
         },
@@ -132,8 +132,8 @@
           groupId: 'eb_sec_mat',
           groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
           groupIcon: '📐',
-          baseMatM: 6,
-          baseMatF: 9,
+          baseMatM: 8,
+          baseMatF: 7,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -145,8 +145,8 @@
           groupId: 'eb_sec_mat',
           groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
           groupIcon: '📐',
-          baseMatM: 5,
-          baseMatF: 8,
+          baseMatM: 4,
+          baseMatF: 5,
           baseDocM: 1,
           baseDocF: 0
         },
@@ -158,8 +158,8 @@
           groupId: 'eb_sec_mat',
           groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
           groupIcon: '📐',
-          baseMatM: 5,
-          baseMatF: 8,
+          baseMatM: 1,
+          baseMatF: 4,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -171,8 +171,8 @@
           groupId: 'eb_sec_mat',
           groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
           groupIcon: '📐',
-          baseMatM: 6,
-          baseMatF: 9,
+          baseMatM: 2,
+          baseMatF: 5,
           baseDocM: 1,
           baseDocF: 1
         }
@@ -189,8 +189,8 @@
           id: 'ac-pre-com',
           name: 'PREESCOLAR COMUNITARIO MULTINIVEL',
           turno: 'MATUTINO',
-          baseMatM: 5,
-          baseMatF: 9,
+          baseMatM: 9,
+          baseMatF: 10,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -198,8 +198,8 @@
           id: 'ac-prim-multi',
           name: 'PRIMARIA MULTIGRADO',
           turno: 'MATUTINO',
-          baseMatM: 43,
-          baseMatF: 46,
+          baseMatM: 26,
+          baseMatF: 43,
           baseDocM: 0,
           baseDocF: 2
         }
@@ -216,8 +216,8 @@
           id: 'lc-pre-com',
           name: 'PREESCOLAR COMUNITARIO MULTINIVEL',
           turno: 'MATUTINO',
-          baseMatM: 9,
-          baseMatF: 7,
+          baseMatM: 8,
+          baseMatF: 6,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -226,7 +226,7 @@
           name: 'PRIMARIA MULTIGRADO',
           turno: 'MATUTINO',
           baseMatM: 31,
-          baseMatF: 32,
+          baseMatF: 26,
           baseDocM: 1,
           baseDocF: 1
         }
@@ -243,8 +243,8 @@
           id: 'jp-pre-com',
           name: 'PREESCOLAR COMUNITARIO MULTINIVEL',
           turno: 'MATUTINO',
-          baseMatM: 9,
-          baseMatF: 10,
+          baseMatM: 6,
+          baseMatF: 12,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -252,8 +252,8 @@
           id: 'jp-prim-multi',
           name: 'PRIMARIA MULTIGRADO',
           turno: 'MATUTINO',
-          baseMatM: 27,
-          baseMatF: 29,
+          baseMatM: 19,
+          baseMatF: 25,
           baseDocM: 0,
           baseDocF: 1
         }
@@ -270,8 +270,8 @@
           id: 'ec-pre-com',
           name: 'PREESCOLAR COMUNITARIO MULTINIVEL',
           turno: 'MATUTINO',
-          baseMatM: 4,
-          baseMatF: 9,
+          baseMatM: 10,
+          baseMatF: 5,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -279,7 +279,7 @@
           id: 'ec-prim-multi',
           name: 'PRIMARIA MULTIGRADO',
           turno: 'MATUTINO',
-          baseMatM: 42,
+          baseMatM: 32,
           baseMatF: 31,
           baseDocM: 2,
           baseDocF: 0
@@ -297,8 +297,8 @@
           id: 'or-pre-com',
           name: 'PREESCOLAR COMUNITARIO MULTINIVEL',
           turno: 'MATUTINO',
-          baseMatM: 0,
-          baseMatF: 0,
+          baseMatM: 4,
+          baseMatF: 9,
           baseDocM: 0,
           baseDocF: 1
         },
@@ -306,8 +306,8 @@
           id: 'or-prim-multi',
           name: 'PRIMARIA MULTIGRADO',
           turno: 'MATUTINO',
-          baseMatM: 26,
-          baseMatF: 24,
+          baseMatM: 18,
+          baseMatF: 19,
           baseDocM: 1,
           baseDocF: 1
         }
@@ -316,16 +316,16 @@
   ];
 
   const STORAGE_KEYS = {
-    SCHOOLS_BASE: 'ner_schools_base_v3',
-    DAILY_ATTENDANCE: 'ner_daily_attendance_v3',
-    LAST_ACTIVE_DATE: 'ner_last_active_date_v3',
-    AUTOSAVED_LOG: 'ner_autosaved_log_v3',
-    GOOGLE_SHEET_URL: 'ner_google_sheet_url_v1',
-    MANUAL_LOCK_MODE: 'ner_manual_lock_mode_v3'
+    SCHOOLS_BASE: 'ner_schools_base_v4',
+    DAILY_ATTENDANCE: 'ner_daily_attendance_v4',
+    LAST_ACTIVE_DATE: 'ner_last_active_date_v4',
+    AUTOSAVED_LOG: 'ner_autosaved_log_v4',
+    GOOGLE_SHEET_URL: 'ner_google_sheet_url_v4',
+    MANUAL_LOCK_MODE: 'ner_manual_lock_mode_v4'
   };
 
-  // URL oficial de sincronización en la nube con Google Sheets
-  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyUiX0rfX_pHYaupOxB_aV3V3bzjut9sJxfa7BE9WE6AlspOV29Ncl655rKMKn9K0Iq/exec';
+  // URL de sincronización en la nube (Vaciada por defecto para modo 100% LOCAL solicitado)
+  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = '';
 
   const ADMIN_PIN = 'Arnel2007';
 
@@ -355,19 +355,17 @@
     loadManualLockConfig();
     initCloudConfig();
     setupClockTimer();
-    setupCloudAutoSyncTimer();
     renderSchoolsTiles();
     renderTeacherTable();
     checkTimeLockout();
 
-    // Comprobación inicial de datos en la nube (Google Sheets)
     if (state.cloudUrl) {
-      fetchCloudData(false);
+      updateCloudSyncBadge('synced', 'Nube: Configurada');
     } else {
-      updateCloudSyncBadge('unconfigured', 'Nube: Sin Configurar (Local)');
+      updateCloudSyncBadge('offline', 'Modo Local (Activo)');
     }
 
-    console.log('Sistema Asistencia NER Inicializado');
+    console.log('Sistema Asistencia NER Inicializado en Modo Local');
   }
 
   function loadBaseConfig() {
@@ -383,14 +381,11 @@
       state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
     }
 
-    // Migración para Estrella de Belén (17692): actualizar a tablas por grado si aún tiene la configuración antigua
+    // Asegurar que todas las escuelas tengan la estructura y datos oficiales del III Corte 2026
     const eb = state.schools.find(s => s.id === '17692');
-    if (!eb || !eb.modalities || !eb.modalities.some(m => m.id === 'eb-prim-1')) {
-      const ebConfig = INITIAL_SCHOOLS_CONFIG.find(s => s.id === '17692');
-      if (eb && ebConfig) {
-        eb.modalities = JSON.parse(JSON.stringify(ebConfig.modalities));
-        saveBaseConfig();
-      }
+    if (!eb || !eb.modalities || eb.modalities.length < 12 || !eb.modalities.some(m => m.id === 'eb-prim-1')) {
+      state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
+      saveBaseConfig();
     }
   }
 
@@ -523,9 +518,15 @@
 
         // 1. Sincronizar catálogo base oficial de escuelas (matrícula oficial y plantilla)
         if (remoteState.schools && Array.isArray(remoteState.schools) && remoteState.schools.length > 0) {
-          state.schools = remoteState.schools;
-          saveBaseConfig();
-          changesApplied = true;
+          const remoteEB = remoteState.schools.find(s => s.id === '17692');
+          if (remoteEB && remoteEB.modalities && remoteEB.modalities.length >= 12) {
+            state.schools = remoteState.schools;
+            saveBaseConfig();
+            changesApplied = true;
+          } else {
+            console.log('El servidor en la nube tiene una estructura desactualizada. Se conserva la estructura local de 12 grados y se actualiza el servidor.');
+            syncToCloudBaseConfig();
+          }
         }
 
         // 2. Sincronizar asistencias del día actual
@@ -1340,12 +1341,12 @@
               ${mod.turno}
             </td>
 
-            <!-- MATRÍCULA ACTUAL -->
+            <!-- MATRÍCULA ACTUAL (Oficial de Dirección) -->
             <td class="mat">
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Matrícula fijada en 0."' : ''}>
+              <input type="number" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
             </td>
             <td class="mat">
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Matrícula fijada en 0."' : ''}>
+              <input type="number" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
             </td>
             <td class="calc">
               <input type="text" class="cua-input calc-input" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
@@ -1436,18 +1437,18 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- 1. MATRÍCULA ACTUAL -->
+                  <!-- 1. MATRÍCULA ACTUAL (Oficial de Dirección) -->
                   <tr class="mob-row-mat">
                     <td class="mob-td-label">
                       <span class="mob-dot mat-dot"></span>
                       <strong>Matrícula</strong>
-                      <small>Editable</small>
+                      <small>Oficial Dirección</small>
                     </td>
                     <td>
-                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                      <input type="number" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
                     </td>
                     <td>
-                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                      <input type="number" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
                     </td>
                     <td>
                       <input type="text" class="cua-input calc-input mob-input" id="mob-mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
@@ -1628,9 +1629,11 @@
       if (mobAlert) mobAlert.style.display = 'none';
     }
 
-    const matM = parseInt(getFieldVal(`mat-m-${modId}`), 10) || 0;
-    const matF = parseInt(getFieldVal(`mat-f-${modId}`), 10) || 0;
+    const matM = hasDocenteAtendiendo ? (mod ? mod.baseMatM : 0) : 0;
+    const matF = hasDocenteAtendiendo ? (mod ? mod.baseMatF : 0) : 0;
     const matT = matM + matF;
+    setBothVal(`mat-m-${modId}`, matM);
+    setBothVal(`mat-f-${modId}`, matF);
     setBothVal(`mat-t-${modId}`, matT);
 
     const asistMStr = getFieldVal(`asist-m-${modId}`);
