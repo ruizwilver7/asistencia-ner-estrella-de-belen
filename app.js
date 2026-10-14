@@ -317,6 +317,8 @@
 
   const STORAGE_KEYS = {
     SCHOOLS_BASE: 'ner_schools_base_v4',
+    BASE_STATE: 'ner_base_state_v4',
+    GLOBAL_SETTINGS: 'ner_global_settings_v4',
     DAILY_ATTENDANCE: 'ner_daily_attendance_v4',
     LAST_ACTIVE_DATE: 'ner_last_active_date_v4',
     AUTOSAVED_LOG: 'ner_autosaved_log_v4',
@@ -324,8 +326,15 @@
     MANUAL_LOCK_MODE: 'ner_manual_lock_mode_v4'
   };
 
-  // URL de sincronización en la nube (Vaciada por defecto para modo 100% LOCAL solicitado)
-  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = '';
+  const DEFAULT_GLOBAL_SETTINGS = {
+    lockHour: 14,
+    lockMinute: 30,
+    targetAttendancePct: 85,
+    nerName: 'NER Estrella de Belén'
+  };
+
+  // URL de sincronización en la nube (Google Apps Script Web App oficial del NER)
+  const CONFIG_DEFAULT_GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyUiX0rfX_pHYaupOxB_aV3V3bzjut9sJxfa7BE9WE6AlspOV29Ncl655rKMKn9K0Iq/exec';
 
   const ADMIN_PIN = 'Arnel2007';
 
@@ -333,11 +342,14 @@
   const state = {
     schools: [],
     selectedSchoolId: '17692',
+    selectedGradeId: '', // Para Estrella de Belén: '' (sin seleccionar / prompt), 'all', o id de grado ('eb-prim-1', etc.)
+    globalSettings: { ...DEFAULT_GLOBAL_SETTINGS },
     currentDateStr: '',
     isLocked: false,
-    manualLockMode: 'auto', // 'auto' (sigue reloj 2:30 PM), 'unlocked' (forzado abierto por Dir), 'locked' (forzado cerrado por Dir)
+    manualLockMode: 'auto', // 'auto' (sigue reloj), 'unlocked' (forzado abierto por Dir), 'locked' (forzado cerrado por Dir)
     currentRole: 'docente', // 'docente' o 'admin'
     adminEditMatricula: false,
+    expandedConsolidatedMods: new Set(),
     dailyAttendance: {},
     autoSavedLog: {}, // Control de descargas automáticas por fecha
     cloudUrl: '',
@@ -355,48 +367,97 @@
     loadManualLockConfig();
     initCloudConfig();
     setupClockTimer();
+    setupCloudAutoSyncTimer();
     renderSchoolsTiles();
     renderTeacherTable();
     checkTimeLockout();
 
     if (state.cloudUrl) {
-      updateCloudSyncBadge('synced', 'Nube: Configurada');
+      updateCloudSyncBadge('synced', 'Nube: Conectada');
+      fetchCloudData(false);
     } else {
       updateCloudSyncBadge('offline', 'Modo Local (Activo)');
     }
 
-    console.log('Sistema Asistencia NER Inicializado en Modo Local');
+    console.log('Sistema Asistencia NER Inicializado con Sincronización en Nube Activa');
   }
 
   function loadBaseConfig() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.SCHOOLS_BASE);
-      if (stored) {
-        state.schools = JSON.parse(stored);
+      const storedBase = localStorage.getItem(STORAGE_KEYS.BASE_STATE);
+      if (storedBase) {
+        const parsed = JSON.parse(storedBase);
+        if (parsed.schools && Array.isArray(parsed.schools) && parsed.schools.length > 0) {
+          state.schools = parsed.schools;
+        }
+        if (parsed.globalSettings) {
+          state.globalSettings = Object.assign({}, DEFAULT_GLOBAL_SETTINGS, parsed.globalSettings);
+        }
       } else {
-        state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
+        const storedSchools = localStorage.getItem(STORAGE_KEYS.SCHOOLS_BASE);
+        if (storedSchools) {
+          state.schools = JSON.parse(storedSchools);
+        } else {
+          state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
+        }
+
+        const storedSettings = localStorage.getItem(STORAGE_KEYS.GLOBAL_SETTINGS);
+        if (storedSettings) {
+          state.globalSettings = Object.assign({}, DEFAULT_GLOBAL_SETTINGS, JSON.parse(storedSettings));
+        }
+
         saveBaseConfig();
       }
     } catch (e) {
+      console.warn('Error al cargar Línea Base:', e);
       state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
+      state.globalSettings = { ...DEFAULT_GLOBAL_SETTINGS };
     }
 
-    // Asegurar que todas las escuelas tengan la estructura y datos oficiales del III Corte 2026
+    // Asegurar que todas las escuelas existan y tengan las modalidades completas
     const eb = state.schools.find(s => s.id === '17692');
     if (!eb || !eb.modalities || eb.modalities.length < 12 || !eb.modalities.some(m => m.id === 'eb-prim-1')) {
       state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
       saveBaseConfig();
     }
+
+    applyGlobalSettingsToUI();
   }
 
   function saveBaseConfig() {
+    const basePayload = {
+      schools: state.schools,
+      globalSettings: state.globalSettings,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEYS.BASE_STATE, JSON.stringify(basePayload));
     localStorage.setItem(STORAGE_KEYS.SCHOOLS_BASE, JSON.stringify(state.schools));
+    localStorage.setItem(STORAGE_KEYS.GLOBAL_SETTINGS, JSON.stringify(state.globalSettings));
+  }
+
+  function applyGlobalSettingsToUI() {
+    const lockTimeInput = document.getElementById('settingLockTime');
+    const targetPctInput = document.getElementById('settingTargetPct');
+    const nerNameInput = document.getElementById('settingNerName');
+
+    if (lockTimeInput) {
+      const hh = String(state.globalSettings.lockHour !== undefined ? state.globalSettings.lockHour : 14).padStart(2, '0');
+      const mm = String(state.globalSettings.lockMinute !== undefined ? state.globalSettings.lockMinute : 30).padStart(2, '0');
+      lockTimeInput.value = `${hh}:${mm}`;
+    }
+    if (targetPctInput) {
+      targetPctInput.value = state.globalSettings.targetAttendancePct !== undefined ? state.globalSettings.targetAttendancePct : 85;
+    }
+    if (nerNameInput) {
+      nerNameInput.value = state.globalSettings.nerName || 'NER Estrella de Belén';
+    }
   }
 
   /**
    * REGLA DE REINICIO A LAS 00:00 (MEDIANOCHE):
-   * Cada nuevo día, la matrícula actual SIEMPRE vuelve al estado oficial
-   * editado/guardado en Dirección, ignorando modificaciones temporales del día anterior.
+   * Cada nuevo día, el sistema toma como punto de partida estricto la
+   * NUEVA Línea Base (Base State) guardada en Dirección (matrículas, docentes y parámetros),
+   * no valores estáticos quemados en el código.
    */
   function updateDateAndCheckMidnightReset() {
     const now = getEffectiveCurrentTime();
@@ -408,10 +469,43 @@
     const lastDate = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVE_DATE);
 
     if (lastDate && lastDate !== todayStr) {
-      console.log(`Nuevo día detectado (${todayStr}). Restableciendo Matrícula Actual a la matrícula oficial de Dirección.`);
-      showToast(`Nuevo día escolar (${todayStr}). Matrícula restablecida a los valores oficiales de Dirección.`);
+      console.log(`Nuevo día detectado (${todayStr}). Restableciendo a Línea Base oficial de Dirección.`);
+      
+      // 1. Cargar Línea Base oficial guardada en Dirección
+      loadBaseConfig();
+
+      // 2. Inicializar el registro del nuevo día tomando como punto de partida estricto la Línea Base
+      if (!state.dailyAttendance[todayStr]) {
+        state.dailyAttendance[todayStr] = {};
+      }
+
+      state.schools.forEach(school => {
+        state.dailyAttendance[todayStr][school.id] = {
+          saved: false,
+          savedAt: '',
+          modalities: {}
+        };
+        school.modalities.forEach(mod => {
+          state.dailyAttendance[todayStr][school.id].modalities[mod.id] = {
+            matM: mod.baseMatM,
+            matF: mod.baseMatF,
+            asistM: '',
+            asistF: '',
+            docJustM: 0,
+            docJustF: 0,
+            docInjustM: 0,
+            docInjustF: 0,
+            docAsistM: mod.baseDocM,
+            docAsistF: mod.baseDocF
+          };
+        });
+      });
+
+      saveDailyData();
       state.manualLockMode = 'auto';
       localStorage.removeItem(STORAGE_KEYS.MANUAL_LOCK_MODE);
+
+      showToast(`Nuevo día escolar (${todayStr}). Iniciado con la Línea Base oficial de Dirección.`);
     }
 
     state.currentDateStr = todayStr;
@@ -459,13 +553,13 @@
   function initCloudConfig() {
     try {
       let savedUrl = localStorage.getItem(STORAGE_KEYS.GOOGLE_SHEET_URL);
-      if (!savedUrl || savedUrl.trim() === '') {
+      if (!savedUrl || savedUrl.trim() === '' || !savedUrl.startsWith('http')) {
         savedUrl = CONFIG_DEFAULT_GOOGLE_SHEET_URL;
         if (savedUrl) {
           localStorage.setItem(STORAGE_KEYS.GOOGLE_SHEET_URL, savedUrl);
         }
       }
-      state.cloudUrl = (savedUrl || '').trim();
+      state.cloudUrl = (savedUrl || CONFIG_DEFAULT_GOOGLE_SHEET_URL || '').trim();
 
       const inputUrl = document.getElementById('inputGoogleWebAppUrl');
       if (inputUrl) {
@@ -529,18 +623,55 @@
           }
         }
 
-        // 2. Sincronizar asistencias del día actual
+        // 2. Sincronizar asistencias del día actual (Fusión profunda por grado/modalidad para proteger envíos simultáneos)
         if (remoteState.dailyAttendance && typeof remoteState.dailyAttendance === 'object') {
-          if (!state.dailyAttendance[state.currentDateStr]) {
-            state.dailyAttendance[state.currentDateStr] = {};
+          const today = state.currentDateStr;
+          if (!state.dailyAttendance[today]) {
+            state.dailyAttendance[today] = {};
           }
-          if (remoteState.dailyAttendance[state.currentDateStr]) {
-            state.dailyAttendance[state.currentDateStr] = {
-              ...state.dailyAttendance[state.currentDateStr],
-              ...remoteState.dailyAttendance[state.currentDateStr]
-            };
-            saveDailyData();
-            changesApplied = true;
+          const remoteToday = remoteState.dailyAttendance[today];
+          if (remoteToday && typeof remoteToday === 'object') {
+            for (const sId in remoteToday) {
+              const rSchool = remoteToday[sId];
+              if (!state.dailyAttendance[today][sId]) {
+                state.dailyAttendance[today][sId] = JSON.parse(JSON.stringify(rSchool));
+                changesApplied = true;
+              } else {
+                const lSchool = state.dailyAttendance[today][sId];
+                if (!lSchool.modalities) lSchool.modalities = {};
+                if (rSchool.modalities) {
+                  for (const mId in rSchool.modalities) {
+                    const rMod = rSchool.modalities[mId];
+                    const lMod = lSchool.modalities[mId];
+
+                    // Si el usuario en este momento está con el cursor o editando este grado, no pisarlo
+                    const isCurrentlyActiveMod = (state.selectedSchoolId === sId && state.selectedGradeId === mId);
+                    if (isCurrentlyActiveMod) {
+                      continue;
+                    }
+
+                    const rHasData = rMod && (rMod.asistM > 0 || rMod.asistF > 0 || rMod.docJustM > 0 || rMod.docJustF > 0 || rMod.docInjustM > 0 || rMod.docInjustF > 0);
+                    const lHasData = lMod && (lMod.asistM > 0 || lMod.asistF > 0 || lMod.docJustM > 0 || lMod.docJustF > 0 || lMod.docInjustM > 0 || lMod.docInjustF > 0);
+
+                    // Si la nube tiene datos o local no tenía datos, actualizar
+                    if (rHasData || !lHasData) {
+                      if (JSON.stringify(lMod) !== JSON.stringify(rMod)) {
+                        lSchool.modalities[mId] = Object.assign({}, rMod);
+                        changesApplied = true;
+                      }
+                    }
+                  }
+                }
+                if (rSchool.saved && !lSchool.saved) {
+                  lSchool.saved = true;
+                  lSchool.savedAt = rSchool.savedAt || lSchool.savedAt;
+                  changesApplied = true;
+                }
+              }
+            }
+            if (changesApplied) {
+              saveDailyData();
+            }
           }
         }
 
@@ -599,7 +730,166 @@
     }
   }
 
-  async function syncToCloudDailyAttendance(school, modalitiesData, nowTimeStr) {
+  /**
+   * MAPEO DE MODALIDADES OFICIALES DEL CONSOLIDADO (14 FILAS OFICIALES)
+   * 1. Centro Escolar Estrella de Belén (4 modalidades oficiales):
+   *    - PREESCOLAR FORMAL MULTINIVEL (Matutino) [eb-pre-form]
+   *    - PRIMARIA REGULAR (Matutino) [eb-prim-1, eb-prim-2]
+   *    - PRIMARIA REGULAR (Vespertino) [eb-prim-3, eb-prim-4, eb-prim-5, eb-prim-6]
+   *    - SECUNDARIA DIURNA (Matutino) [eb-sec-7, eb-sec-8, eb-sec-9, eb-sec-10, eb-sec-11]
+   * 2. Otras 5 escuelas (2 modalidades cada una, 10 filas):
+   *    - PREESCOLAR COMUNITARIO MULTINIVEL (Matutino)
+   *    - PRIMARIA MULTIGRADO (Matutino)
+   * TOTAL: 14 FILAS OFICIALES EN EL CONSOLIDADO.
+   */
+  function getOfficialConsolidatedModalities(school) {
+    if (school.id !== '17692') {
+      return school.modalities.map(m => ({
+        id: m.id,
+        name: m.name,
+        turno: m.turno,
+        isAggregated: false,
+        grades: [m]
+      }));
+    }
+
+    return [
+      {
+        id: 'eb-mod-pre',
+        name: 'PREESCOLAR FORMAL MULTINIVEL',
+        turno: 'MATUTINO',
+        isAggregated: false,
+        grades: school.modalities.filter(m => m.groupId === 'eb_pre')
+      },
+      {
+        id: 'eb-mod-prim-mat',
+        name: 'PRIMARIA REGULAR',
+        turno: 'MATUTINO',
+        isAggregated: true,
+        grades: school.modalities.filter(m => m.groupId === 'eb_prim_mat')
+      },
+      {
+        id: 'eb-mod-prim-vesp',
+        name: 'PRIMARIA REGULAR',
+        turno: 'VESPERTINO',
+        isAggregated: true,
+        grades: school.modalities.filter(m => m.groupId === 'eb_prim_vesp')
+      },
+      {
+        id: 'eb-mod-sec-mat',
+        name: 'SECUNDARIA DIURNA',
+        turno: 'MATUTINO',
+        isAggregated: true,
+        grades: school.modalities.filter(m => m.groupId === 'eb_sec_mat')
+      }
+    ];
+  }
+
+  function getOfficialModalityCalculatedData(officialMod, schoolRecord, isAdminEdit) {
+    let baseMatM = 0, baseMatF = 0;
+    let baseDocM = 0, baseDocF = 0;
+    let matM = 0, matF = 0;
+    let asistM = 0, asistF = 0;
+    let docAsistM = 0, docAsistF = 0;
+    let docJustM = 0, docJustF = 0;
+    let docInjustM = 0, docInjustF = 0;
+
+    const gradesDetail = [];
+
+    officialMod.grades.forEach(g => {
+      const gRecord = schoolRecord.modalities && schoolRecord.modalities[g.id];
+      const gBaseDocM = g.baseDocM || 0;
+      const gBaseDocF = g.baseDocF || 0;
+      baseDocM += gBaseDocM;
+      baseDocF += gBaseDocF;
+
+      const gBaseMatM = g.baseMatM || 0;
+      const gBaseMatF = g.baseMatF || 0;
+      baseMatM += gBaseMatM;
+      baseMatF += gBaseMatF;
+
+      const gDocJustM = gRecord ? (gRecord.docJustM || 0) : 0;
+      const gDocJustF = gRecord ? (gRecord.docJustF || 0) : 0;
+      const gDocInjustM = gRecord ? (gRecord.docInjustM || 0) : 0;
+      const gDocInjustF = gRecord ? (gRecord.docInjustF || 0) : 0;
+
+      docJustM += gDocJustM;
+      docJustF += gDocJustF;
+      docInjustM += gDocInjustM;
+      docInjustF += gDocInjustF;
+
+      const gDocAsistM = gRecord && gRecord.docAsistM !== undefined 
+        ? gRecord.docAsistM 
+        : Math.max(0, gBaseDocM - (gDocJustM + gDocInjustM));
+      const gDocAsistF = gRecord && gRecord.docAsistF !== undefined 
+        ? gRecord.docAsistF 
+        : Math.max(0, gBaseDocF - (gDocJustF + gDocInjustF));
+      const gDocAsistT = gDocAsistM + gDocAsistF;
+
+      docAsistM += gDocAsistM;
+      docAsistF += gDocAsistF;
+
+      let gMatM = gRecord && gRecord.matM !== undefined ? gRecord.matM : gBaseMatM;
+      let gMatF = gRecord && gRecord.matF !== undefined ? gRecord.matF : gBaseMatF;
+      let gAsistM = gRecord && gRecord.asistM !== undefined && gRecord.asistM !== '' ? parseInt(gRecord.asistM, 10) : 0;
+      let gAsistF = gRecord && gRecord.asistF !== undefined && gRecord.asistF !== '' ? parseInt(gRecord.asistF, 10) : 0;
+
+      if (gDocAsistT === 0 && !isAdminEdit) {
+        gMatM = 0;
+        gMatF = 0;
+        gAsistM = 0;
+        gAsistF = 0;
+      }
+
+      matM += gMatM;
+      matF += gMatF;
+      asistM += gAsistM;
+      asistF += gAsistF;
+
+      gradesDetail.push({
+        grade: g,
+        baseMatM: gBaseMatM,
+        baseMatF: gBaseMatF,
+        baseDocM: gBaseDocM,
+        baseDocF: gBaseDocF,
+        matM: gMatM,
+        matF: gMatF,
+        asistM: gAsistM,
+        asistF: gAsistF,
+        docAsistM: gDocAsistM,
+        docAsistF: gDocAsistF,
+        docJustM: gDocJustM,
+        docJustF: gDocJustF,
+        docInjustM: gDocInjustM,
+        docInjustF: gDocInjustF
+      });
+    });
+
+    const matT = matM + matF;
+    const asistT = asistM + asistF;
+    const baseDocT = baseDocM + baseDocF;
+    const docAsistT = docAsistM + docAsistF;
+    const docJustT = docJustM + docJustF;
+    const docInjustT = docInjustM + docInjustF;
+
+    const pctM = matM > 0 ? ((asistM / matM) * 100).toFixed(1) : '0.0';
+    const pctF = matF > 0 ? ((asistF / matF) * 100).toFixed(1) : '0.0';
+    const pctT = matT > 0 ? ((asistT / matT) * 100).toFixed(1) : '0.0';
+
+    return {
+      baseMatM, baseMatF, baseMatT: baseMatM + baseMatF,
+      baseDocM, baseDocF, baseDocT,
+      matM, matF, matT,
+      asistM, asistF, asistT,
+      pctM, pctF, pctT,
+      docAsistM, docAsistF, docAsistT,
+      docJustM, docJustF, docJustT,
+      docInjustM, docInjustF, docInjustT,
+      gradesDetail
+    };
+  }
+
+  async function syncToCloudDailyAttendance(school, modalitiesData, nowTimeStr, targetGradeId = 'all') {
     if (!state.cloudUrl) {
       updateCloudSyncBadge('unconfigured', 'Nube: Sin Configurar (Local)');
       return;
@@ -607,47 +897,33 @@
 
     updateCloudSyncBadge('syncing', 'Nube: Guardando...');
 
-    const records = school.modalities.map(mod => {
-      const mData = modalitiesData[mod.id] || {};
-      const matM = mData.matM || 0;
-      const matF = mData.matF || 0;
-      const matT = matM + matF;
-      const asistM = mData.asistM || 0;
-      const asistF = mData.asistF || 0;
-      const asistT = asistM + asistF;
-      const pct = matT > 0 ? ((asistT / matT) * 100).toFixed(1) : '0.0';
-      const docAsistM = mData.docAsistM || 0;
-      const docAsistF = mData.docAsistF || 0;
-      const docAsistT = docAsistM + docAsistF;
-      const docJustM = mData.docJustM || 0;
-      const docJustF = mData.docJustF || 0;
-      const docJustT = docJustM + docJustF;
-      const docInjustM = mData.docInjustM || 0;
-      const docInjustF = mData.docInjustF || 0;
-      const docInjustT = docInjustM + docInjustF;
+    const schoolRecord = { modalities: modalitiesData, saved: true };
+    const officialMods = getOfficialConsolidatedModalities(school);
 
+    const records = officialMods.map(mod => {
+      const calc = getOfficialModalityCalculatedData(mod, schoolRecord, false);
       return {
         schoolId: school.id,
         schoolName: school.name,
         modalityId: mod.id,
         modalityName: mod.name,
         turno: mod.turno,
-        matM,
-        matF,
-        matT,
-        asistM,
-        asistF,
-        asistT,
-        pct,
-        docAsistM,
-        docAsistF,
-        docAsistT,
-        docJustM,
-        docJustF,
-        docJustT,
-        docInjustM,
-        docInjustF,
-        docInjustT
+        matM: calc.matM,
+        matF: calc.matF,
+        matT: calc.matT,
+        asistM: calc.asistM,
+        asistF: calc.asistF,
+        asistT: calc.asistT,
+        pct: calc.pctT,
+        docAsistM: calc.docAsistM,
+        docAsistF: calc.docAsistF,
+        docAsistT: calc.docAsistT,
+        docJustM: calc.docJustM,
+        docJustF: calc.docJustF,
+        docJustT: calc.docJustT,
+        docInjustM: calc.docInjustM,
+        docInjustF: calc.docInjustF,
+        docInjustT: calc.docInjustT
       };
     });
 
@@ -657,6 +933,7 @@
       time: nowTimeStr,
       schoolId: school.id,
       schoolName: school.name,
+      targetGradeId: targetGradeId || 'all',
       records: records,
       syncState: {
         schools: state.schools,
@@ -703,8 +980,10 @@
     const payload = {
       action: 'saveBaseConfig',
       schools: state.schools,
+      globalSettings: state.globalSettings,
       syncState: {
         schools: state.schools,
+        globalSettings: state.globalSettings,
         dailyAttendance: state.dailyAttendance,
         lastActiveDate: state.currentDateStr,
         manualLockMode: state.manualLockMode
@@ -779,7 +1058,7 @@
   }
 
   /**
-   * Control de bloqueo del sistema: Soporta modo Automático (Límite 2:30 PM),
+   * Control de bloqueo del sistema: Soporta modo Automático (Límite configurado en Dirección),
    * y Modo Manual desde Dirección (Desbloqueo forzado o Bloqueo forzado).
    */
   function checkTimeLockout() {
@@ -787,7 +1066,14 @@
     const hours = now.getHours();
     const minutes = now.getMinutes();
 
-    const isPastDeadline = hours > 14 || (hours === 14 && minutes >= 30);
+    const lockHour = state.globalSettings.lockHour !== undefined ? state.globalSettings.lockHour : 14;
+    const lockMinute = state.globalSettings.lockMinute !== undefined ? state.globalSettings.lockMinute : 30;
+
+    const isPastDeadline = hours > lockHour || (hours === lockHour && minutes >= lockMinute);
+
+    const ampm = lockHour >= 12 ? 'PM' : 'AM';
+    const displayH = lockHour % 12 || 12;
+    const lockTimeLabel = `${displayH}:${String(lockMinute).padStart(2, '0')} ${ampm}`;
 
     let isLockedEffective = false;
     let lockReason = '';
@@ -814,20 +1100,20 @@
     if (state.isLocked) {
       if (badge) badge.className = 'status-indicator-badge closed';
       if (badgeText) {
-        badgeText.textContent = lockReason === 'manual_locked' ? 'Cerrado (Por Dirección)' : 'Cerrado (Límite 2:30 PM)';
+        badgeText.textContent = lockReason === 'manual_locked' ? 'Cerrado (Por Dirección)' : `Cerrado (Límite ${lockTimeLabel})`;
       }
       if (lockBanner) {
         lockBanner.classList.remove('hidden');
         if (lockBannerTitle) {
           lockBannerTitle.textContent = lockReason === 'manual_locked'
             ? 'SISTEMA CERRADO MANUALMENTE POR DIRECCIÓN'
-            : 'SISTEMA CERRADO POR EL DÍA DE HOY (Horario límite: 2:30 PM)';
+            : `SISTEMA CERRADO POR EL DÍA DE HOY (Horario límite: ${lockTimeLabel})`;
         }
       }
       updateLockBannerRole();
       if (saveBtn) saveBtn.disabled = true;
 
-      // DESCARGA AUTOMÁTICA DE EXCEL A LAS 2:30 PM (solo en cierre automático)
+      // DESCARGA AUTOMÁTICA DE EXCEL (solo en cierre automático)
       if (lockReason === 'auto_deadline') {
         triggerAutomaticDailyExcelSave();
       }
@@ -875,11 +1161,17 @@
         icon.innerHTML = '<path d="M7 11V7a5 5 0 0 1 9.9-1"></path><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>';
       }
       if (badge) {
+        const lockHour = state.globalSettings.lockHour !== undefined ? state.globalSettings.lockHour : 14;
+        const lockMinute = state.globalSettings.lockMinute !== undefined ? state.globalSettings.lockMinute : 30;
+        const ampm = lockHour >= 12 ? 'PM' : 'AM';
+        const displayH = lockHour % 12 || 12;
+        const lockTimeLabel = `${displayH}:${String(lockMinute).padStart(2, '0')} ${ampm}`;
+
         if (state.manualLockMode === 'locked') {
           badge.textContent = 'Estado: Cerrado Manualmente por Dirección';
           badge.className = 'admin-lock-badge-info badge-locked-manual';
         } else {
-          badge.textContent = 'Estado: Cerrado Automático (Horario 2:30 PM)';
+          badge.textContent = `Estado: Cerrado Automático (Horario ${lockTimeLabel})`;
           badge.className = 'admin-lock-badge-info badge-locked-auto';
         }
       }
@@ -1040,12 +1332,34 @@
   function selectSchool(schoolId) {
     if (state.selectedSchoolId !== schoolId) {
       saveCurrentInputsToMemory(state.selectedSchoolId);
+      saveDailyData();
       state.selectedSchoolId = schoolId;
+      if (schoolId !== '17692') {
+        state.selectedGradeId = ''; // Otras escuelas muestran siempre su vista completa directa
+        const gradeSec = document.getElementById('gradeSelectorSection');
+        if (gradeSec) {
+          gradeSec.classList.add('hidden');
+          gradeSec.style.display = 'none';
+        }
+      }
     }
     renderSchoolsTiles();
     renderTeacherTable();
 
     // Reubicar de forma automática y suave hacia la tabla de llenado del centro seleccionado
+    const cardArea = document.getElementById('cardAreaAsistencia');
+    if (cardArea) {
+      cardArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function onGradeFilterChange(gradeId) {
+    if (state.selectedSchoolId !== '17692') return;
+    saveCurrentInputsToMemory(state.selectedSchoolId);
+    saveDailyData();
+    state.selectedGradeId = gradeId || '';
+    renderTeacherTable();
+
     const cardArea = document.getElementById('cardAreaAsistencia');
     if (cardArea) {
       cardArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1153,6 +1467,8 @@
     const school = state.schools.find(s => s.id === state.selectedSchoolId);
     if (!school) return;
 
+    const isEstrella = school.id === '17692';
+
     const codeEl = document.getElementById('teacherCurrentCode');
     const titleEl = document.getElementById('teacherTableTitle');
     if (codeEl) codeEl.textContent = `Cód: ${school.code}`;
@@ -1173,9 +1489,78 @@
     const mobContainer = document.getElementById('teacherMobileTablesContainer');
     if (mobContainer) mobContainer.innerHTML = '';
 
-    // Agrupar modalidades por grupo (si están definidas en la escuela, ej. Estrella de Belén)
+    const gradeSec = document.getElementById('gradeSelectorSection');
+    const gradeSelect = document.getElementById('gradeFilterSelect');
+    const chipsContainer = document.getElementById('gradeChipsContainer');
+
+    // CONTROL ESTRICTO: Selector de grado EXCLUSIVO para Estrella de Belén (17692)
+    if (gradeSec) {
+      if (isEstrella) {
+        gradeSec.classList.remove('hidden');
+        gradeSec.style.display = 'block';
+        if (gradeSelect) gradeSelect.value = state.selectedGradeId || '';
+
+        if (chipsContainer) {
+          const chipsData = [
+            { id: 'eb-pre-form', label: '🎒 Preescolar' },
+            { id: 'eb-prim-1', label: '📖 1°' },
+            { id: 'eb-prim-2', label: '📖 2°' },
+            { id: 'eb-prim-3', label: '📘 3°' },
+            { id: 'eb-prim-4', label: '📘 4°' },
+            { id: 'eb-prim-5', label: '📘 5°' },
+            { id: 'eb-prim-6', label: '📘 6°' },
+            { id: 'eb-sec-7', label: '🎓 7°' },
+            { id: 'eb-sec-8', label: '🎓 8°' },
+            { id: 'eb-sec-9', label: '🎓 9°' },
+            { id: 'eb-sec-10', label: '🎓 10°' },
+            { id: 'eb-sec-11', label: '🎓 11°' },
+            { id: 'all', label: '👁️ Todos' }
+          ];
+          chipsContainer.innerHTML = chipsData.map(c => `
+            <button type="button" class="grade-chip ${state.selectedGradeId === c.id ? 'active' : ''}" onclick="window.app.onGradeFilterChange('${c.id}')">${c.label}</button>
+          `).join('');
+        }
+      } else {
+        // En cualquier otra escuela se oculta completamente el selector de grado
+        gradeSec.classList.add('hidden');
+        gradeSec.style.display = 'none';
+        state.selectedGradeId = '';
+      }
+    }
+
+    // En Sede Estrella de Belén: si no hay grado seleccionado, mostrar primero selector/placeholder
+    if (isEstrella && !state.selectedGradeId) {
+      const emptyHtml = `
+        <div class="grade-empty-selection-card">
+          <span class="empty-icon">📚</span>
+          <h3>Seleccione un Grado para Llenar Asistencia</h3>
+          <p>Elija el grado específico arriba (en el selector o botones rápidos) para cargar su matrícula y tabla de captura:</p>
+          <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-top:0.75rem;">
+            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-prim-1')">📖 1° Grado Matutino</button>
+            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-prim-3')">📘 3° Grado Vespertino</button>
+            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-sec-7')">🎓 7mo Grado Secundaria</button>
+            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos los Grados</button>
+          </div>
+        </div>
+      `;
+      if (deskWrap) deskWrap.innerHTML = emptyHtml;
+      if (mobContainer) mobContainer.innerHTML = emptyHtml;
+      recalculateTeacherTotals();
+      return;
+    }
+
+    // Determinar modalidades a desplegar
+    let displayModalities = school.modalities;
+    if (isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all') {
+      displayModalities = school.modalities.filter(m => m.id === state.selectedGradeId);
+      if (displayModalities.length === 0) {
+        displayModalities = school.modalities;
+      }
+    }
+
+    // Agrupar modalidades a desplegar por grupo
     const groupsMap = new Map();
-    school.modalities.forEach(mod => {
+    displayModalities.forEach(mod => {
       const gId = mod.groupId || 'default';
       if (!groupsMap.has(gId)) {
         groupsMap.set(gId, {
@@ -1188,10 +1573,24 @@
       groupsMap.get(gId).modalities.push(mod);
     });
     const groups = Array.from(groupsMap.values());
-    const isGroupedSchool = groups.length > 1;
+    const isGroupedSchool = (isEstrella && state.selectedGradeId === 'all') || (!isEstrella && groups.length > 1);
 
     // 1. RENDERIZADO VISTA ESCRITORIO
     if (deskWrap) {
+      if (isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all' && displayModalities.length > 0) {
+        const activeMod = displayModalities[0];
+        const activeBanner = document.createElement('div');
+        activeBanner.className = 'grade-active-banner';
+        activeBanner.innerHTML = `
+          <div class="grade-active-banner-left">
+            <span class="grade-active-tag">Grado Activo</span>
+            <span class="grade-active-title">📝 Mostrando: ${activeMod.gradeLabel || activeMod.name} (${activeMod.turno})</span>
+          </div>
+          <button type="button" class="grade-active-btn-all" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos los Grados</button>
+        `;
+        deskWrap.appendChild(activeBanner);
+      }
+
       groups.forEach(grp => {
         const groupCard = document.createElement('div');
         groupCard.className = isGroupedSchool ? 'desktop-group-table-card' : '';
@@ -1265,6 +1664,20 @@
     }
 
     // 2. RENDERIZADO DE FILAS Y VISTA TELÉFONO
+    if (mobContainer && isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all' && displayModalities.length > 0) {
+      const activeMod = displayModalities[0];
+      const mobActiveBanner = document.createElement('div');
+      mobActiveBanner.className = 'grade-active-banner';
+      mobActiveBanner.innerHTML = `
+        <div class="grade-active-banner-left">
+          <span class="grade-active-tag">Grado Activo</span>
+          <span class="grade-active-title">📝 ${activeMod.gradeLabel || activeMod.name}</span>
+        </div>
+        <button type="button" class="grade-active-btn-all" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos</button>
+      `;
+      mobContainer.appendChild(mobActiveBanner);
+    }
+
     groups.forEach(grp => {
       const tbody = document.getElementById(`tbody-${grp.id}`);
 
@@ -1703,6 +2116,8 @@
       };
     }
 
+    // Persistir de inmediato cada entrada parcial en tiempo real
+    saveDailyData();
     checkSchoolValidationAlerts();
     recalculateTeacherTotals();
   }
@@ -1730,10 +2145,21 @@
 
   function validateSchoolAttendance(school) {
     const errors = [];
+    const todayData = getTodayAttendance();
+    const schoolRecord = todayData[school.id] || { modalities: {} };
 
     school.modalities.forEach(mod => {
-      const docJustM = parseInt(getFieldVal(`doc-just-m-${mod.id}`), 10) || 0;
-      const docInjustM = parseInt(getFieldVal(`doc-injust-m-${mod.id}`), 10) || 0;
+      const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+      const docJustMEl = document.getElementById(`doc-just-m-${mod.id}`) || document.getElementById(`mob-doc-just-m-${mod.id}`);
+      const docJustFEl = document.getElementById(`doc-just-f-${mod.id}`) || document.getElementById(`mob-doc-just-f-${mod.id}`);
+      const docInjustMEl = document.getElementById(`doc-injust-m-${mod.id}`) || document.getElementById(`mob-doc-injust-m-${mod.id}`);
+      const docInjustFEl = document.getElementById(`doc-injust-f-${mod.id}`) || document.getElementById(`mob-doc-injust-f-${mod.id}`);
+
+      const docJustM = docJustMEl ? (parseInt(docJustMEl.value, 10) || 0) : (modData ? (modData.docJustM || 0) : 0);
+      const docJustF = docJustFEl ? (parseInt(docJustFEl.value, 10) || 0) : (modData ? (modData.docJustF || 0) : 0);
+      const docInjustM = docInjustMEl ? (parseInt(docInjustMEl.value, 10) || 0) : (modData ? (modData.docInjustM || 0) : 0);
+      const docInjustF = docInjustFEl ? (parseInt(docInjustFEl.value, 10) || 0) : (modData ? (modData.docInjustF || 0) : 0);
+
       const docAusentesM = docJustM + docInjustM;
       if (docAusentesM > mod.baseDocM) {
         errors.push({
@@ -1743,8 +2169,6 @@
         });
       }
 
-      const docJustF = parseInt(getFieldVal(`doc-just-f-${mod.id}`), 10) || 0;
-      const docInjustF = parseInt(getFieldVal(`doc-injust-f-${mod.id}`), 10) || 0;
       const docAusentesF = docJustF + docInjustF;
       if (docAusentesF > mod.baseDocF) {
         errors.push({
@@ -1758,11 +2182,16 @@
       const docAsistF = Math.max(0, mod.baseDocF - docAusentesF);
       const docAsistT = docAsistM + docAsistF;
 
-      const matM = parseInt(getFieldVal(`mat-m-${mod.id}`), 10) || 0;
-      const matF = parseInt(getFieldVal(`mat-f-${mod.id}`), 10) || 0;
+      const matMEl = document.getElementById(`mat-m-${mod.id}`) || document.getElementById(`mob-mat-m-${mod.id}`);
+      const matFEl = document.getElementById(`mat-f-${mod.id}`) || document.getElementById(`mob-mat-f-${mod.id}`);
+      let matM = matMEl ? (parseInt(matMEl.value, 10) || 0) : (modData && modData.matM !== undefined ? modData.matM : mod.baseMatM);
+      let matF = matFEl ? (parseInt(matFEl.value, 10) || 0) : (modData && modData.matF !== undefined ? modData.matF : mod.baseMatF);
 
-      const asistMStr = getFieldVal(`asist-m-${mod.id}`);
-      const asistFStr = getFieldVal(`asist-f-${mod.id}`);
+      const asistMEl = document.getElementById(`asist-m-${mod.id}`) || document.getElementById(`mob-asist-m-${mod.id}`);
+      const asistFEl = document.getElementById(`asist-f-${mod.id}`) || document.getElementById(`mob-asist-f-${mod.id}`);
+      const asistMStr = asistMEl ? asistMEl.value : (modData && modData.asistM !== undefined ? String(modData.asistM) : '');
+      const asistFStr = asistFEl ? asistFEl.value : (modData && modData.asistF !== undefined ? String(modData.asistF) : '');
+
       const asistM = parseInt(asistMStr, 10) || 0;
       const asistF = parseInt(asistFStr, 10) || 0;
 
@@ -1796,9 +2225,17 @@
     return errors;
   }
 
+  /**
+   * RECALCULA TOTALES DEL CENTRO ACTUAL (INCREMENTAL Y ACUMULATIVO)
+   * Suma todas las modalidades del centro, independientemente de si están
+   * renderizadas actualmente o filtradas por grado en la UI.
+   */
   function recalculateTeacherTotals() {
     const school = state.schools.find(s => s.id === state.selectedSchoolId);
     if (!school) return;
+
+    const todayData = getTodayAttendance();
+    const schoolRecord = todayData[school.id] || { modalities: {} };
 
     let totMatM = 0, totMatF = 0, totMatT = 0;
     let totAsistM = 0, totAsistF = 0, totAsistT = 0;
@@ -1806,7 +2243,7 @@
     let totDocJustM = 0, totDocJustF = 0, totDocJustT = 0;
     let totDocInjustM = 0, totDocInjustF = 0, totDocInjustT = 0;
 
-    // Agrupar por grupo para calcular subtotales si aplica
+    // Agrupar por grupo para calcular subtotales acumulativos
     const groupsMap = new Map();
     school.modalities.forEach(mod => {
       const gId = mod.groupId || 'default';
@@ -1824,32 +2261,55 @@
       let subDocInjustM = 0, subDocInjustF = 0, subDocInjustT = 0;
 
       mods.forEach(mod => {
-        const matM = parseInt(getFieldVal(`mat-m-${mod.id}`), 10) || 0;
-        const matF = parseInt(getFieldVal(`mat-f-${mod.id}`), 10) || 0;
+        const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+
+        // Leer del DOM si está activo; si está oculto por el filtro de grado, leer de todayData
+        const matMEl = document.getElementById(`mat-m-${mod.id}`) || document.getElementById(`mob-mat-m-${mod.id}`);
+        const matFEl = document.getElementById(`mat-f-${mod.id}`) || document.getElementById(`mob-mat-f-${mod.id}`);
+        const asistMEl = document.getElementById(`asist-m-${mod.id}`) || document.getElementById(`mob-asist-m-${mod.id}`);
+        const asistFEl = document.getElementById(`asist-f-${mod.id}`) || document.getElementById(`mob-asist-f-${mod.id}`);
+        const docJustMEl = document.getElementById(`doc-just-m-${mod.id}`) || document.getElementById(`mob-doc-just-m-${mod.id}`);
+        const docJustFEl = document.getElementById(`doc-just-f-${mod.id}`) || document.getElementById(`mob-doc-just-f-${mod.id}`);
+        const docInjustMEl = document.getElementById(`doc-injust-m-${mod.id}`) || document.getElementById(`mob-doc-injust-m-${mod.id}`);
+        const docInjustFEl = document.getElementById(`doc-injust-f-${mod.id}`) || document.getElementById(`mob-doc-injust-f-${mod.id}`);
+
+        const docJustM = docJustMEl ? (parseInt(docJustMEl.value, 10) || 0) : (modData ? (modData.docJustM || 0) : 0);
+        const docJustF = docJustFEl ? (parseInt(docJustFEl.value, 10) || 0) : (modData ? (modData.docJustF || 0) : 0);
+        const docInjustM = docInjustMEl ? (parseInt(docInjustMEl.value, 10) || 0) : (modData ? (modData.docInjustM || 0) : 0);
+        const docInjustF = docInjustFEl ? (parseInt(docInjustFEl.value, 10) || 0) : (modData ? (modData.docInjustF || 0) : 0);
+
+        const docAsistM = Math.max(0, mod.baseDocM - (docJustM + docInjustM));
+        const docAsistF = Math.max(0, mod.baseDocF - (docJustF + docInjustF));
+        const docAsistT = docAsistM + docAsistF;
+
+        let matM = matMEl ? (parseInt(matMEl.value, 10) || 0) : (modData && modData.matM !== undefined ? modData.matM : mod.baseMatM);
+        let matF = matFEl ? (parseInt(matFEl.value, 10) || 0) : (modData && modData.matF !== undefined ? modData.matF : mod.baseMatF);
+        let asistM = asistMEl ? (parseInt(asistMEl.value, 10) || 0) : (modData && modData.asistM !== undefined && modData.asistM !== '' ? parseInt(modData.asistM, 10) : 0);
+        let asistF = asistFEl ? (parseInt(asistFEl.value, 10) || 0) : (modData && modData.asistF !== undefined && modData.asistF !== '' ? parseInt(modData.asistF, 10) : 0);
+
+        if (docAsistT === 0) {
+          matM = 0;
+          matF = 0;
+          asistM = 0;
+          asistF = 0;
+        }
+
         subMatM += matM;
         subMatF += matF;
         subMatT += (matM + matF);
 
-        const asistM = parseInt(getFieldVal(`asist-m-${mod.id}`), 10) || 0;
-        const asistF = parseInt(getFieldVal(`asist-f-${mod.id}`), 10) || 0;
         subAsistM += asistM;
         subAsistF += asistF;
         subAsistT += (asistM + asistF);
 
-        const docAsistM = parseInt(getFieldVal(`doc-asist-m-${mod.id}`), 10) || 0;
-        const docAsistF = parseInt(getFieldVal(`doc-asist-f-${mod.id}`), 10) || 0;
         subDocAsistM += docAsistM;
         subDocAsistF += docAsistF;
         subDocAsistT += (docAsistM + docAsistF);
 
-        const docJustM = parseInt(getFieldVal(`doc-just-m-${mod.id}`), 10) || 0;
-        const docJustF = parseInt(getFieldVal(`doc-just-f-${mod.id}`), 10) || 0;
         subDocJustM += docJustM;
         subDocJustF += docJustF;
         subDocJustT += (docJustM + docJustF);
 
-        const docInjustM = parseInt(getFieldVal(`doc-injust-m-${mod.id}`), 10) || 0;
-        const docInjustF = parseInt(getFieldVal(`doc-injust-f-${mod.id}`), 10) || 0;
         subDocInjustM += docInjustM;
         subDocInjustF += docInjustF;
         subDocInjustT += (docInjustM + docInjustF);
@@ -1912,13 +2372,11 @@
       overallPct = Math.round((totAsistT / totMatT) * 1000) / 10;
     }
 
-    const isGroupedSchool = groupsMap.size > 1;
-
     // 1. Actualizar pie de tabla en vista escritorio
     const tfoot = document.getElementById('teacherTableFooter');
     if (tfoot) {
       tfoot.innerHTML = `
-        <td colspan="2" class="col-modalidad sticky-footer-col" style="text-align: right; font-weight: 800; padding-right: 0.6rem;">${isGroupedSchool ? 'TOTAL GENERAL ESCUELA:' : 'TOTAL:'}</td>
+        <td colspan="2" class="col-modalidad sticky-footer-col" style="text-align: right; font-weight: 800; padding-right: 0.6rem;">${school.id === '17692' ? 'TOTAL GENERAL ESCUELA:' : 'TOTAL:'}</td>
         <td class="tfoot-total-val">${totMatM}</td>
         <td class="tfoot-total-val">${totMatF}</td>
         <td class="tfoot-total-val highlight-total">${totMatT}</td>
@@ -1956,20 +2414,112 @@
       mobPct.className = `pct-cell-badge ${overallPct >= 85 ? 'pct-high' : (overallPct >= 70 ? 'pct-med' : 'pct-low')}`;
     }
     if (mobDoc) mobDoc.textContent = `${totDocAsistT} pres.`;
+
+    // 3. Recalcular consolidado general del NER en tiempo real
+    updateConsolidatedTotalsRealTime();
   }
 
   /**
-   * Guarda la asistencia del centro seleccionado con validación estricta
+   * ACTUALIZACIÓN DEL CONSOLIDADO GENERAL EN TIEMPO REAL (INCREMENTAL Y ACUMULATIVO)
+   * Suma automáticamente los parciales de todos los grados y escuelas.
    */
-  function saveCurrentSchoolAttendance() {
+  function updateConsolidatedTotalsRealTime() {
+    const todayData = getTodayAttendance();
+
+    let totNerMatM = 0, totNerMatF = 0, totNerMatT = 0;
+    let totNerAsistM = 0, totNerAsistF = 0, totNerAsistT = 0;
+    let totNerBaseDocM = 0, totNerBaseDocF = 0, totNerBaseDocT = 0;
+    let totNerDocAsistM = 0, totNerDocAsistF = 0, totNerDocAsistT = 0;
+    let totNerDocJustM = 0, totNerDocJustF = 0, totNerDocJustT = 0;
+    let totNerDocInjustM = 0, totNerDocInjustF = 0, totNerDocInjustT = 0;
+
+    state.schools.forEach(school => {
+      const schoolRecord = todayData[school.id] || { modalities: {} };
+
+      school.modalities.forEach(mod => {
+        const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+        const baseDocM = mod.baseDocM;
+        const baseDocF = mod.baseDocF;
+        const baseDocT = baseDocM + baseDocF;
+
+        const docJustM = modData ? (modData.docJustM || 0) : 0;
+        const docJustF = modData ? (modData.docJustF || 0) : 0;
+        const docJustT = docJustM + docJustF;
+
+        const docInjustM = modData ? (modData.docInjustM || 0) : 0;
+        const docInjustF = modData ? (modData.docInjustF || 0) : 0;
+        const docInjustT = docInjustM + docInjustF;
+
+        const docAsistM = modData && modData.docAsistM !== undefined 
+          ? modData.docAsistM 
+          : Math.max(0, baseDocM - (docJustM + docInjustM));
+        const docAsistF = modData && modData.docAsistF !== undefined 
+          ? modData.docAsistF 
+          : Math.max(0, baseDocF - (docJustF + docInjustF));
+        const docAsistT = docAsistM + docAsistF;
+
+        let matM = modData && modData.matM !== undefined ? modData.matM : mod.baseMatM;
+        let matF = modData && modData.matF !== undefined ? modData.matF : mod.baseMatF;
+        let asistM = modData && modData.asistM !== undefined && modData.asistM !== '' ? parseInt(modData.asistM, 10) : 0;
+        let asistF = modData && modData.asistF !== undefined && modData.asistF !== '' ? parseInt(modData.asistF, 10) : 0;
+
+        if (docAsistT === 0 && !state.adminEditMatricula) {
+          matM = 0;
+          matF = 0;
+          asistM = 0;
+          asistF = 0;
+        }
+
+        const matT = matM + matF;
+        const asistT = asistM + asistF;
+
+        totNerMatM += matM; totNerMatF += matF; totNerMatT += matT;
+        totNerAsistM += asistM; totNerAsistF += asistF; totNerAsistT += asistT;
+        totNerBaseDocM += baseDocM; totNerBaseDocF += baseDocF; totNerBaseDocT += baseDocT;
+        totNerDocAsistM += docAsistM; totNerDocAsistF += docAsistF; totNerDocAsistT += docAsistT;
+        totNerDocJustM += docJustM; totNerDocJustF += docJustF; totNerDocJustT += docJustT;
+        totNerDocInjustM += docInjustM; totNerDocInjustF += docInjustF; totNerDocInjustT += docInjustT;
+      });
+    });
+
+    let overallNerPct = 0;
+    if (totNerMatT > 0) {
+      overallNerPct = (Math.round((totNerAsistT / totNerMatT) * 1000) / 10).toFixed(1);
+    }
+
+    const kpiMat = document.getElementById('adminKpiTotalMatricula');
+    const kpiMatSub = document.getElementById('adminKpiMatriculaSub');
+    const kpiAsist = document.getElementById('adminKpiTotalAsistencia');
+    const kpiAsistSub = document.getElementById('adminKpiAsistenciaSub');
+    const kpiPct = document.getElementById('adminKpiPorcentaje');
+    const kpiDoc = document.getElementById('adminKpiDocentesAsist');
+    const kpiDocAus = document.getElementById('adminKpiDocentesAusentes');
+
+    if (kpiMat) kpiMat.textContent = totNerMatT;
+    if (kpiMatSub) kpiMatSub.textContent = `M: ${totNerMatM} | F: ${totNerMatF}`;
+    if (kpiAsist) kpiAsist.textContent = totNerAsistT;
+    if (kpiAsistSub) kpiAsistSub.textContent = `M: ${totNerAsistM} | F: ${totNerAsistF}`;
+    if (kpiPct) kpiPct.textContent = `${overallNerPct}%`;
+    if (kpiDoc) kpiDoc.textContent = totNerDocAsistT;
+    if (kpiDocAus) kpiDocAus.textContent = `${totNerDocJustT} just. / ${totNerDocInjustT} injust. (de ${totNerBaseDocT} en plantilla)`;
+  }
+
+  /**
+   * Guarda la asistencia del centro seleccionado con validación estricta y fusión protegida
+   */
+  async function saveCurrentSchoolAttendance() {
     if (state.isLocked) {
-      alert('SISTEMA CERRADO POR EL DÍA DE HOY (Horario límite: 2:30 PM)');
+      alert('SISTEMA CERRADO POR EL DÍA DE HOY (Horario límite alcanzado)');
       return;
     }
 
     const school = state.schools.find(s => s.id === state.selectedSchoolId);
     if (!school) return;
 
+    // 1. Guardar cualquier entrada visible activa en el DOM a la memoria todayData
+    saveCurrentInputsToMemory(school.id);
+
+    // 2. Validar
     const errors = validateSchoolAttendance(school);
     if (errors.length > 0) {
       const errorMsgPlain = errors.map(e => '• ' + e.msg.replace(/<[^>]*>?/gm, '')).join('\n');
@@ -1985,18 +2535,88 @@
       return;
     }
 
+    const isEstrella = (school.id === '17692');
+    const targetGradeId = (isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all') 
+      ? state.selectedGradeId 
+      : 'all';
+
+    // 3. FUSIÓN PREVIA DESDE LA NUBE (Fetch & Merge):
+    // Si otro docente guardó su grado hace unos momentos, lo recuperamos antes de consolidar
+    // para no pisar ni borrar los datos de su grado.
+    if (state.cloudUrl) {
+      try {
+        const sep = state.cloudUrl.includes('?') ? '&' : '?';
+        const fetchUrl = `${state.cloudUrl}${sep}action=getData&_nocache=${Date.now()}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const res = await fetch(fetchUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        const result = await res.json();
+
+        if (result && result.status === 'success' && result.data) {
+          const remoteState = result.data;
+          const today = state.currentDateStr;
+          if (remoteState.dailyAttendance && remoteState.dailyAttendance[today] && remoteState.dailyAttendance[today][school.id]) {
+            const remoteSchool = remoteState.dailyAttendance[today][school.id];
+            if (remoteSchool.modalities) {
+              const currentDaily = getTodayAttendance();
+              if (!currentDaily[school.id]) currentDaily[school.id] = { modalities: {}, saved: false };
+              if (!currentDaily[school.id].modalities) currentDaily[school.id].modalities = {};
+
+              school.modalities.forEach(mod => {
+                // Si es el grado que este docente está guardando activamente, conservar su entrada local
+                if (targetGradeId !== 'all' && mod.id === targetGradeId) {
+                  return;
+                }
+                const rMod = remoteSchool.modalities[mod.id];
+                if (rMod) {
+                  const lMod = currentDaily[school.id].modalities[mod.id];
+                  const rHasData = (rMod.asistM > 0 || rMod.asistF > 0 || rMod.docJustM > 0 || rMod.docJustF > 0 || rMod.docInjustM > 0 || rMod.docInjustF > 0);
+                  const lHasData = lMod && (lMod.asistM > 0 || lMod.asistF > 0 || lMod.docJustM > 0 || lMod.docJustF > 0 || lMod.docInjustM > 0 || lMod.docInjustF > 0);
+
+                  // Si la nube tiene datos o local no tenía datos, adoptar lo de la nube
+                  if (rHasData || !lHasData) {
+                    currentDaily[school.id].modalities[mod.id] = Object.assign({}, rMod);
+                  }
+                }
+              });
+
+              if (remoteSchool.saved) {
+                currentDaily[school.id].saved = true;
+              }
+            }
+          }
+        }
+      } catch (cloudErr) {
+        console.log('Fusión previa con la nube omitida (offline o demora en red):', cloudErr);
+      }
+    }
+
     const todayData = getTodayAttendance();
+    if (!todayData[school.id]) {
+      todayData[school.id] = { modalities: {}, saved: false };
+    }
+    const schoolRecord = todayData[school.id];
+    if (!schoolRecord.modalities) schoolRecord.modalities = {};
+
     const modalitiesData = {};
 
+    // 4. Recopilar datos acumulativos de TODAS las modalidades del centro
     school.modalities.forEach(mod => {
-      const docAsistM = parseInt(getFieldVal(`doc-asist-m-${mod.id}`), 10) || 0;
-      const docAsistF = parseInt(getFieldVal(`doc-asist-f-${mod.id}`), 10) || 0;
+      const mData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+      const docJustM = mData ? (mData.docJustM || 0) : 0;
+      const docJustF = mData ? (mData.docJustF || 0) : 0;
+      const docInjustM = mData ? (mData.docInjustM || 0) : 0;
+      const docInjustF = mData ? (mData.docInjustF || 0) : 0;
+
+      const docAsistM = Math.max(0, mod.baseDocM - (docJustM + docInjustM));
+      const docAsistF = Math.max(0, mod.baseDocF - (docJustF + docInjustF));
       const docAsistT = docAsistM + docAsistF;
 
-      let matM = parseInt(getFieldVal(`mat-m-${mod.id}`), 10) || 0;
-      let matF = parseInt(getFieldVal(`mat-f-${mod.id}`), 10) || 0;
-      let asistM = parseInt(getFieldVal(`asist-m-${mod.id}`), 10) || 0;
-      let asistF = parseInt(getFieldVal(`asist-f-${mod.id}`), 10) || 0;
+      let matM = mData && mData.matM !== undefined ? mData.matM : mod.baseMatM;
+      let matF = mData && mData.matF !== undefined ? mData.matF : mod.baseMatF;
+      let asistM = mData && mData.asistM !== undefined && mData.asistM !== '' ? parseInt(mData.asistM, 10) : 0;
+      let asistF = mData && mData.asistF !== undefined && mData.asistF !== '' ? parseInt(mData.asistF, 10) : 0;
 
       if (docAsistT === 0) {
         matM = 0;
@@ -2012,23 +2632,24 @@
         asistF,
         docAsistM,
         docAsistF,
-        docJustM: parseInt(getFieldVal(`doc-just-m-${mod.id}`), 10) || 0,
-        docJustF: parseInt(getFieldVal(`doc-just-f-${mod.id}`), 10) || 0,
-        docInjustM: parseInt(getFieldVal(`doc-injust-m-${mod.id}`), 10) || 0,
-        docInjustF: parseInt(getFieldVal(`doc-injust-f-${mod.id}`), 10) || 0
+        docJustM,
+        docJustF,
+        docInjustM,
+        docInjustF
       };
+
+      schoolRecord.modalities[mod.id] = modalitiesData[mod.id];
     });
 
     const nowTimeStr = new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    todayData[school.id] = {
-      saved: true,
-      savedAt: nowTimeStr,
-      modalities: modalitiesData
-    };
+    todayData[school.id].saved = true;
+    todayData[school.id].savedAt = nowTimeStr;
+    todayData[school.id].modalities = modalitiesData;
 
     saveDailyData();
     renderSchoolsTiles();
+    updateConsolidatedTotalsRealTime();
 
     const statusBadge = document.getElementById('teacherSavedStatusBadge');
     if (statusBadge) {
@@ -2044,8 +2665,8 @@
 
     showToast(`✓ Asistencia guardada correctamente para ${school.name}`);
 
-    // Sincronizar en la nube con Google Sheets en segundo plano
-    syncToCloudDailyAttendance(school, modalitiesData, nowTimeStr);
+    // Sincronizar en la nube con Google Sheets pasando targetGradeId para fusión protegida
+    syncToCloudDailyAttendance(school, modalitiesData, nowTimeStr, targetGradeId);
   }
 
   /**
@@ -2073,9 +2694,21 @@
         const btn = document.getElementById('btnToggleEditMatricula');
         if (btn) btn.className = 'btn btn-warning';
         const btnText = document.getElementById('btnEditMatText');
-        if (btnText) btnText.textContent = 'Editar Matrícula y Docentes';
+        if (btnText) btnText.textContent = 'Editar Matrícula, Docentes y Parámetros';
         const indicator = document.getElementById('editModeIndicator');
         if (indicator) indicator.classList.add('hidden');
+        const lockTimeInput = document.getElementById('settingLockTime');
+        const targetPctInput = document.getElementById('settingTargetPct');
+        const nerNameInput = document.getElementById('settingNerName');
+        const statusBadge = document.getElementById('adminSettingsStatusBadge');
+        if (lockTimeInput) lockTimeInput.disabled = true;
+        if (targetPctInput) targetPctInput.disabled = true;
+        if (nerNameInput) nerNameInput.disabled = true;
+        if (statusBadge) {
+          statusBadge.textContent = 'Valores Activos';
+          statusBadge.style.background = '#e0f2fe';
+          statusBadge.style.color = '#0369a1';
+        }
       }
       state.currentRole = 'docente';
       document.getElementById('view-admin').classList.remove('active');
@@ -2088,28 +2721,51 @@
   }
 
   /**
-   * EDICIÓN DE MATRÍCULA Y DOCENTES DESDE DIRECCIÓN
-   * Guarda la matrícula definitiva y la cantidad de docentes permanente que serán predeterminadas siempre.
+   * EDICIÓN DE MATRÍCULA, DOCENTES Y PARÁMETROS GLOBALES DESDE DIRECCIÓN
+   * Guarda la matrícula definitiva, cantidad de docentes y parámetros globales
+   * que constituyen la Línea Base (Base State) permanente.
    */
   function toggleAdminEditMatricula() {
     const btn = document.getElementById('btnToggleEditMatricula');
     const btnText = document.getElementById('btnEditMatText');
     const indicator = document.getElementById('editModeIndicator');
+    const lockTimeInput = document.getElementById('settingLockTime');
+    const targetPctInput = document.getElementById('settingTargetPct');
+    const nerNameInput = document.getElementById('settingNerName');
+    const statusBadge = document.getElementById('adminSettingsStatusBadge');
 
     if (!state.adminEditMatricula) {
       state.adminEditMatricula = true;
-      btn.className = 'btn btn-success';
-      btnText.textContent = 'Guardar Matrículas y Docentes';
-      indicator.classList.remove('hidden');
-      indicator.textContent = 'Modo Edición Activado: Puede alterar las matrículas y la cantidad de docentes de cada escuela. Estos valores se guardarán de forma permanente.';
+      if (btn) btn.className = 'btn btn-success';
+      if (btnText) btnText.textContent = 'Guardar Matrículas, Docentes y Parámetros';
+      if (indicator) {
+        indicator.classList.remove('hidden');
+        indicator.textContent = 'Modo Edición Activado: Modifique matrículas, docentes y parámetros globales. Al guardar, se establecerán como la nueva Línea Base permanente.';
+      }
+      if (lockTimeInput) lockTimeInput.disabled = false;
+      if (targetPctInput) targetPctInput.disabled = false;
+      if (nerNameInput) nerNameInput.disabled = false;
+      if (statusBadge) {
+        statusBadge.textContent = 'Modo Edición Habilitado';
+        statusBadge.style.background = '#fef3c7';
+        statusBadge.style.color = '#92400e';
+      }
       renderGlobalConsolidatedTable();
-      showToast('Modo edición activado: Modifique los números de matrícula y docentes oficiales.');
+      showToast('Modo edición activado: Modifique los números de matrícula, docentes y parámetros globales.');
     } else {
       saveAdminEditedMatricula();
       state.adminEditMatricula = false;
-      btn.className = 'btn btn-warning';
-      btnText.textContent = 'Editar Matrícula y Docentes';
-      indicator.classList.add('hidden');
+      if (btn) btn.className = 'btn btn-warning';
+      if (btnText) btnText.textContent = 'Editar Matrícula, Docentes y Parámetros';
+      if (indicator) indicator.classList.add('hidden');
+      if (lockTimeInput) lockTimeInput.disabled = true;
+      if (targetPctInput) targetPctInput.disabled = true;
+      if (nerNameInput) nerNameInput.disabled = true;
+      if (statusBadge) {
+        statusBadge.textContent = 'Valores Activos';
+        statusBadge.style.background = '#e0f2fe';
+        statusBadge.style.color = '#0369a1';
+      }
       renderGlobalConsolidatedTable();
     }
   }
@@ -2117,6 +2773,7 @@
   function saveAdminEditedMatricula() {
     const todayData = getTodayAttendance();
 
+    // 1. Guardar Matrículas y Plantilla Docente Base por Escuela y Modalidad
     state.schools.forEach(school => {
       if (!todayData[school.id]) {
         todayData[school.id] = { modalities: {}, saved: false };
@@ -2135,8 +2792,8 @@
           const newMatM = parseInt(inputMatM.value, 10);
           const newMatF = parseInt(inputMatF.value, 10);
 
-          if (!isNaN(newMatM)) mod.baseMatM = newMatM;
-          if (!isNaN(newMatF)) mod.baseMatF = newMatF;
+          if (!isNaN(newMatM)) mod.baseMatM = Math.max(0, newMatM);
+          if (!isNaN(newMatF)) mod.baseMatF = Math.max(0, newMatF);
 
           // ACTUALIZAR SIEMPRE el día de hoy con la nueva matrícula oficial permanente
           if (!todayData[school.id].modalities[mod.id]) {
@@ -2150,8 +2807,8 @@
           const newDocM = parseInt(inputDocM.value, 10);
           const newDocF = parseInt(inputDocF.value, 10);
 
-          if (!isNaN(newDocM)) mod.baseDocM = newDocM;
-          if (!isNaN(newDocF)) mod.baseDocF = newDocF;
+          if (!isNaN(newDocM)) mod.baseDocM = Math.max(0, newDocM);
+          if (!isNaN(newDocF)) mod.baseDocF = Math.max(0, newDocF);
 
           if (todayData[school.id].modalities[mod.id]) {
             const mData = todayData[school.id].modalities[mod.id];
@@ -2166,16 +2823,53 @@
       });
     });
 
+    // 2. Guardar Parámetros Globales (Línea Base)
+    const lockTimeInput = document.getElementById('settingLockTime');
+    const targetPctInput = document.getElementById('settingTargetPct');
+    const nerNameInput = document.getElementById('settingNerName');
+
+    if (lockTimeInput && lockTimeInput.value) {
+      const parts = lockTimeInput.value.split(':');
+      if (parts.length === 2) {
+        const hh = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10);
+        if (!isNaN(hh) && !isNaN(mm)) {
+          state.globalSettings.lockHour = hh;
+          state.globalSettings.lockMinute = mm;
+        }
+      }
+    }
+
+    if (targetPctInput) {
+      const pct = parseFloat(targetPctInput.value);
+      if (!isNaN(pct) && pct >= 0 && pct <= 100) {
+        state.globalSettings.targetAttendancePct = pct;
+      }
+    }
+
+    if (nerNameInput && nerNameInput.value.trim()) {
+      state.globalSettings.nerName = nerNameInput.value.trim();
+    }
+
+    // 3. Persistir como NUEVA Línea Base oficial
     saveBaseConfig();
     saveDailyData();
-    showToast(`✓ Matrículas oficiales y plantilla docente guardadas permanentemente.`);
+
+    // 4. Actualizar estado de bloqueo, totales y vistas en tiempo real
+    checkTimeLockout();
+    updateConsolidatedTotalsRealTime();
+    renderSchoolsTiles();
+
+    showToast(`✓ Nueva Línea Base guardada permanentemente: Matrículas, Docentes y Parámetros.`);
 
     // Sincronizar en la nube con Google Sheets en segundo plano
     syncToCloudBaseConfig();
   }
 
   /**
-   * RENDERIZA EL CONSOLIDADO GENERAL (DIRECCIÓN)
+   * RENDERIZA EL CONSOLIDADO GENERAL (DIRECCIÓN) - ESTRUCTURA OFICIAL POR MODALIDADES
+   * 14 Filas Oficiales (Estrella de Belén: 4 modalidades; Otras escuelas: 2 modalidades c/u)
+   * Agregación incremental y acumulativa en tiempo real de los grados.
    */
   function renderGlobalConsolidatedTable() {
     const tbody = document.getElementById('globalNerTableBody');
@@ -2193,102 +2887,156 @@
     let totNerDocInjustM = 0, totNerDocInjustF = 0, totNerDocInjustT = 0;
     let reportedCount = 0;
 
-    state.schools.forEach((school, schoolIdx) => {
+    state.schools.forEach((school) => {
       const schoolRecord = todayData[school.id] || { modalities: {}, saved: false };
       if (schoolRecord.saved) reportedCount++;
 
-      school.modalities.forEach((mod, modIdx) => {
-        const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+      const officialMods = getOfficialConsolidatedModalities(school);
 
-        const baseDocM = mod.baseDocM;
-        const baseDocF = mod.baseDocF;
-        const baseDocT = baseDocM + baseDocF;
+      officialMods.forEach((mod, modIdx) => {
+        const calc = getOfficialModalityCalculatedData(mod, schoolRecord, state.adminEditMatricula);
 
-        const docJustM = modData ? (modData.docJustM || 0) : 0;
-        const docJustF = modData ? (modData.docJustF || 0) : 0;
-        const docJustT = docJustM + docJustF;
-
-        const docInjustM = modData ? (modData.docInjustM || 0) : 0;
-        const docInjustF = modData ? (modData.docInjustF || 0) : 0;
-        const docInjustT = docInjustM + docInjustF;
-
-        const docAsistM = modData && modData.docAsistM !== undefined 
-          ? modData.docAsistM 
-          : Math.max(0, baseDocM - (docJustM + docInjustM));
-        const docAsistF = modData && modData.docAsistF !== undefined 
-          ? modData.docAsistF 
-          : Math.max(0, baseDocF - (docJustF + docInjustF));
-        const docAsistT = docAsistM + docAsistF;
-
-        let matM = modData && modData.matM !== undefined ? modData.matM : mod.baseMatM;
-        let matF = modData && modData.matF !== undefined ? modData.matF : mod.baseMatF;
-        let asistM = modData ? (modData.asistM || 0) : 0;
-        let asistF = modData ? (modData.asistF || 0) : 0;
-
-        // Si la asistencia de docente llega a 0 (y no estamos en modo edición de plantilla oficial de Dirección):
-        if (docAsistT === 0 && !state.adminEditMatricula) {
-          matM = 0;
-          matF = 0;
-          asistM = 0;
-          asistF = 0;
-        }
-
-        const matT = matM + matF;
-        const asistT = asistM + asistF;
-
-        const pctM = matM > 0 ? ((asistM / matM) * 100).toFixed(1) : '0.0';
-        const pctF = matF > 0 ? ((asistF / matF) * 100).toFixed(1) : '0.0';
-        const pctT = matT > 0 ? ((asistT / matT) * 100).toFixed(1) : '0.0';
-
-        totNerMatM += matM; totNerMatF += matF; totNerMatT += matT;
-        totNerAsistM += asistM; totNerAsistF += asistF; totNerAsistT += asistT;
-        totNerBaseDocM += baseDocM; totNerBaseDocF += baseDocF; totNerBaseDocT += baseDocT;
-        totNerDocAsistM += docAsistM; totNerDocAsistF += docAsistF; totNerDocAsistT += docAsistT;
-        totNerDocJustM += docJustM; totNerDocJustF += docJustF; totNerDocJustT += docJustT;
-        totNerDocInjustM += docInjustM; totNerDocInjustF += docInjustF; totNerDocInjustT += docInjustT;
+        totNerMatM += calc.matM; totNerMatF += calc.matF; totNerMatT += calc.matT;
+        totNerAsistM += calc.asistM; totNerAsistF += calc.asistF; totNerAsistT += calc.asistT;
+        totNerBaseDocM += calc.baseDocM; totNerBaseDocF += calc.baseDocF; totNerBaseDocT += calc.baseDocT;
+        totNerDocAsistM += calc.docAsistM; totNerDocAsistF += calc.docAsistF; totNerDocAsistT += calc.docAsistT;
+        totNerDocJustM += calc.docJustM; totNerDocJustF += calc.docJustF; totNerDocJustT += calc.docJustT;
+        totNerDocInjustM += calc.docInjustM; totNerDocInjustF += calc.docInjustF; totNerDocInjustT += calc.docInjustT;
 
         const tr = document.createElement('tr');
         if (modIdx === 0) tr.className = 'school-group-start';
 
-        const matriculaCellsHtml = state.adminEditMatricula ? `
-          <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-mat-input" id="admin-mat-m-${school.id}-${mod.id}" value="${mod.baseMatM}"></td>
-          <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-mat-input" id="admin-mat-f-${school.id}-${mod.id}" value="${mod.baseMatF}"></td>
-          <td style="font-weight:800; background:#e2e8f0;">${mod.baseMatM + mod.baseMatF}</td>
-        ` : `
-          <td>${matM}</td>
-          <td>${matF}</td>
-          <td style="font-weight:700; background:#f1f5f9;">${matT}</td>
-        `;
+        // Celda de matrícula para fila consolidada
+        let matriculaCellsHtml = '';
+        if (state.adminEditMatricula && !mod.isAggregated) {
+          const singleGrade = mod.grades[0];
+          matriculaCellsHtml = `
+            <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-mat-input" id="admin-mat-m-${school.id}-${singleGrade.id}" value="${singleGrade.baseMatM}"></td>
+            <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-mat-input" id="admin-mat-f-${school.id}-${singleGrade.id}" value="${singleGrade.baseMatF}"></td>
+            <td style="font-weight:800; background:#e2e8f0;">${singleGrade.baseMatM + singleGrade.baseMatF}</td>
+          `;
+        } else {
+          matriculaCellsHtml = `
+            <td>${calc.matM}</td>
+            <td>${calc.matF}</td>
+            <td style="font-weight:700; background:#f1f5f9;">${calc.matT}</td>
+          `;
+        }
 
-        const baseDocCellsHtml = state.adminEditMatricula ? `
-          <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-doc-input" id="admin-doc-m-${school.id}-${mod.id}" value="${baseDocM}"></td>
-          <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-doc-input" id="admin-doc-f-${school.id}-${mod.id}" value="${baseDocF}"></td>
-          <td style="font-weight:800; background:#e2e8f0;">${baseDocT}</td>
-        ` : `
-          <td>${baseDocM}</td>
-          <td>${baseDocF}</td>
-          <td style="font-weight:700; background:#f1f5f9;">${baseDocT}</td>
-        `;
+        // Celda de docentes para fila consolidada
+        let baseDocCellsHtml = '';
+        if (state.adminEditMatricula && !mod.isAggregated) {
+          const singleGrade = mod.grades[0];
+          baseDocCellsHtml = `
+            <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-doc-input" id="admin-doc-m-${school.id}-${singleGrade.id}" value="${singleGrade.baseDocM}"></td>
+            <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-doc-input" id="admin-doc-f-${school.id}-${singleGrade.id}" value="${singleGrade.baseDocF}"></td>
+            <td style="font-weight:800; background:#e2e8f0;">${singleGrade.baseDocM + singleGrade.baseDocF}</td>
+          `;
+        } else {
+          baseDocCellsHtml = `
+            <td>${calc.baseDocM}</td>
+            <td>${calc.baseDocF}</td>
+            <td style="font-weight:700; background:#f1f5f9;">${calc.baseDocT}</td>
+          `;
+        }
+
+        // Columna Nombre Modalidad con badge y botón de desglose si es agregada
+        let modNameContent = `<strong>${mod.name}</strong>`;
+        if (mod.isAggregated) {
+          const isExpanded = state.expandedConsolidatedMods && state.expandedConsolidatedMods.has(mod.id);
+          modNameContent = `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.4rem;">
+              <span><strong>${mod.name}</strong></span>
+              <span class="badge-consolidated-grades">${mod.grades.length} grados</span>
+              ${!state.adminEditMatricula ? `
+                <button type="button" class="btn-subgrade-toggle" onclick="window.app.toggleConsolidatedGradeDetail('${mod.id}')">
+                  ${isExpanded ? '▲ Ocultar' : '▼ Desglosar'}
+                </button>
+              ` : ''}
+            </div>
+          `;
+        }
 
         tr.innerHTML = `
           <td>${modIdx === 0 ? school.num : ''}</td>
           <td>${modIdx === 0 ? `<strong>${school.code}</strong>` : ''}</td>
           <td>${modIdx === 0 ? `<strong>${school.name}</strong>` : ''}</td>
-          <td style="text-align: left; padding-left: 0.5rem;">${mod.name}</td>
+          <td style="text-align: left; padding-left: 0.5rem;">${modNameContent}</td>
           <td>${mod.turno}</td>
 
           ${matriculaCellsHtml}
 
-          <td>${asistM}</td><td>${asistF}</td><td style="font-weight:700; background:#f1f5f9;">${asistT}</td>
-          <td>${pctM}%</td><td>${pctF}%</td><td style="font-weight:700; background:#f1f5f9;">${pctT}%</td>
+          <td>${calc.asistM}</td><td>${calc.asistF}</td><td style="font-weight:700; background:#f1f5f9;">${calc.asistT}</td>
+          <td>${calc.pctM}%</td><td>${calc.pctF}%</td><td style="font-weight:700; background:#f1f5f9;">${calc.pctT}%</td>
 
           ${baseDocCellsHtml}
 
-          <td>${docAsistM}</td><td>${docAsistF}</td><td style="font-weight:700; background:#f1f5f9;">${docAsistT}</td>
-          <td>${docJustM}</td><td>${docJustF}</td><td style="font-weight:700; background:#f1f5f9;">${docJustT}</td>
-          <td>${docInjustM}</td><td>${docInjustF}</td><td style="font-weight:700; background:#f1f5f9;">${docInjustT}</td>
+          <td>${calc.docAsistM}</td><td>${calc.docAsistF}</td><td style="font-weight:700; background:#f1f5f9;">${calc.docAsistT}</td>
+          <td>${calc.docJustM}</td><td>${calc.docJustF}</td><td style="font-weight:700; background:#f1f5f9;">${calc.docJustT}</td>
+          <td>${calc.docInjustM}</td><td>${calc.docInjustF}</td><td style="font-weight:700; background:#f1f5f9;">${calc.docInjustT}</td>
         `;
         tbody.appendChild(tr);
+
+        // Sub-filas por grado en Estrella de Belén (al estar expandido o en modo edición de Línea Base)
+        const showSubgrades = mod.isAggregated && (state.adminEditMatricula || (state.expandedConsolidatedMods && state.expandedConsolidatedMods.has(mod.id)));
+        if (showSubgrades) {
+          calc.gradesDetail.forEach(gd => {
+            const g = gd.grade;
+            const subTr = document.createElement('tr');
+            subTr.className = 'consolidated-subrow';
+
+            let gMatCells = '';
+            let gDocCells = '';
+            if (state.adminEditMatricula) {
+              gMatCells = `
+                <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-mat-input" id="admin-mat-m-${school.id}-${g.id}" value="${g.baseMatM}"></td>
+                <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-mat-input" id="admin-mat-f-${school.id}-${g.id}" value="${g.baseMatF}"></td>
+                <td style="font-weight:700; background:#e2e8f0;">${g.baseMatM + g.baseMatF}</td>
+              `;
+              gDocCells = `
+                <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-doc-input" id="admin-doc-m-${school.id}-${g.id}" value="${g.baseDocM}"></td>
+                <td><input type="number" min="0" inputmode="numeric" pattern="[0-9]*" onfocus="this.select()" class="admin-doc-input" id="admin-doc-f-${school.id}-${g.id}" value="${g.baseDocF}"></td>
+                <td style="font-weight:700; background:#e2e8f0;">${g.baseDocM + g.baseDocF}</td>
+              `;
+            } else {
+              const gMatT = gd.matM + gd.matF;
+              gMatCells = `
+                <td>${gd.matM}</td><td>${gd.matF}</td><td style="background:#f1f5f9;">${gMatT}</td>
+              `;
+              const gBaseDocT = gd.baseDocM + gd.baseDocF;
+              gDocCells = `
+                <td>${gd.baseDocM}</td><td>${gd.baseDocF}</td><td style="background:#f1f5f9;">${gBaseDocT}</td>
+              `;
+            }
+
+            const gMatT = gd.matM + gd.matF;
+            const gAsistT = gd.asistM + gd.asistF;
+            const gDocAsistT = gd.docAsistM + gd.docAsistF;
+            const gDocJustT = gd.docJustM + gd.docJustF;
+            const gDocInjustT = gd.docInjustM + gd.docInjustF;
+            const gPctM = gd.matM > 0 ? ((gd.asistM / gd.matM) * 100).toFixed(1) : '0.0';
+            const gPctF = gd.matF > 0 ? ((gd.asistF / gd.matF) * 100).toFixed(1) : '0.0';
+            const gPctT = gMatT > 0 ? ((gAsistT / gMatT) * 100).toFixed(1) : '0.0';
+
+            subTr.innerHTML = `
+              <td></td><td></td><td></td>
+              <td style="text-align: left; padding-left: 1.5rem; font-style: italic; color: #1e293b;">↳ ${g.gradeLabel || g.name}</td>
+              <td style="font-size: 0.72rem; color: #64748b;">${g.turno}</td>
+
+              ${gMatCells}
+
+              <td>${gd.asistM}</td><td>${gd.asistF}</td><td style="background:#f1f5f9;">${gAsistT}</td>
+              <td>${gPctM}%</td><td>${gPctF}%</td><td style="background:#f1f5f9;">${gPctT}%</td>
+
+              ${gDocCells}
+
+              <td>${gd.docAsistM}</td><td>${gd.docAsistF}</td><td style="background:#f1f5f9;">${gDocAsistT}</td>
+              <td>${gd.docJustM}</td><td>${gd.docJustF}</td><td style="background:#f1f5f9;">${gDocJustT}</td>
+              <td>${gd.docInjustM}</td><td>${gd.docInjustF}</td><td style="background:#f1f5f9;">${gDocInjustT}</td>
+            `;
+            tbody.appendChild(subTr);
+          });
+        }
       });
     });
 
@@ -2332,18 +3080,36 @@
       `;
     }
 
-    document.getElementById('adminKpiTotalMatricula').textContent = totNerMatT;
-    document.getElementById('adminKpiMatriculaSub').textContent = `M: ${totNerMatM} | F: ${totNerMatF}`;
+    const kpiMat = document.getElementById('adminKpiTotalMatricula');
+    const kpiMatSub = document.getElementById('adminKpiMatriculaSub');
+    const kpiAsist = document.getElementById('adminKpiTotalAsistencia');
+    const kpiAsistSub = document.getElementById('adminKpiAsistenciaSub');
+    const kpiPct = document.getElementById('adminKpiPorcentaje');
+    const kpiDoc = document.getElementById('adminKpiDocentesAsist');
+    const kpiDocAus = document.getElementById('adminKpiDocentesAusentes');
 
-    document.getElementById('adminKpiTotalAsistencia').textContent = totNerAsistT;
-    document.getElementById('adminKpiAsistenciaSub').textContent = `M: ${totNerAsistM} | F: ${totNerAsistF}`;
+    if (kpiMat) kpiMat.textContent = totNerMatT;
+    if (kpiMatSub) kpiMatSub.textContent = `M: ${totNerMatM} | F: ${totNerMatF}`;
+    if (kpiAsist) kpiAsist.textContent = totNerAsistT;
+    if (kpiAsistSub) kpiAsistSub.textContent = `M: ${totNerAsistM} | F: ${totNerAsistF}`;
+    if (kpiPct) kpiPct.textContent = `${overallNerPct}%`;
+    if (kpiDoc) kpiDoc.textContent = totNerDocAsistT;
+    if (kpiDocAus) kpiDocAus.textContent = `${totNerDocJustT} just. / ${totNerDocInjustT} injust. (de ${totNerBaseDocT} en plantilla)`;
 
-    document.getElementById('adminKpiPorcentaje').textContent = `${overallNerPct}%`;
+    const repBadge = document.getElementById('adminCentrosReportadosBadge');
+    if (repBadge) {
+      repBadge.textContent = `${reportedCount} / ${state.schools.length} Centros Guardados`;
+    }
+  }
 
-    document.getElementById('adminKpiDocentesAsist').textContent = totNerDocAsistT;
-    document.getElementById('adminKpiDocentesAusentes').textContent = `${totNerDocJustT} just. / ${totNerDocInjustT} injust. (de ${totNerBaseDocT} en plantilla)`;
-
-    document.getElementById('adminCentrosReportadosBadge').textContent = `${reportedCount} / ${state.schools.length} Centros Guardados`;
+  function toggleConsolidatedGradeDetail(modId) {
+    if (!state.expandedConsolidatedMods) state.expandedConsolidatedMods = new Set();
+    if (state.expandedConsolidatedMods.has(modId)) {
+      state.expandedConsolidatedMods.delete(modId);
+    } else {
+      state.expandedConsolidatedMods.add(modId);
+    }
+    renderGlobalConsolidatedTable();
   }
 
   /**
@@ -2504,62 +3270,33 @@
 
       state.schools.forEach(school => {
         const schoolRecord = todayData[school.id] || { modalities: {} };
+        const officialMods = getOfficialConsolidatedModalities(school);
         const startR = currentRow;
-        const modCount = school.modalities.length;
+        const modCount = officialMods.length;
         const endR = startR + modCount - 1;
 
-        school.modalities.forEach((mod, idx) => {
-          const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+        officialMods.forEach((mod, idx) => {
+          const calc = getOfficialModalityCalculatedData(mod, schoolRecord, false);
           const r = currentRow;
 
-          const baseDocM = mod.baseDocM;
-          const baseDocF = mod.baseDocF;
-          const docJustM = modData ? (modData.docJustM || 0) : 0;
-          const docJustF = modData ? (modData.docJustF || 0) : 0;
-          const docInjustM = modData ? (modData.docInjustM || 0) : 0;
-          const docInjustF = modData ? (modData.docInjustF || 0) : 0;
+          totMatM += calc.matM; totMatF += calc.matF; totMatT += calc.matT;
+          totAsistM += calc.asistM; totAsistF += calc.asistF; totAsistT += calc.asistT;
 
-          const docAsistM = modData && modData.docAsistM !== undefined 
-            ? modData.docAsistM 
-            : Math.max(0, baseDocM - (docJustM + docInjustM));
-          const docAsistF = modData && modData.docAsistF !== undefined 
-            ? modData.docAsistF 
-            : Math.max(0, baseDocF - (docJustF + docInjustF));
-          const docAsistT = docAsistM + docAsistF;
-
-          let matM = modData && modData.matM !== undefined ? modData.matM : mod.baseMatM;
-          let matF = modData && modData.matF !== undefined ? modData.matF : mod.baseMatF;
-          let asistM = modData ? (modData.asistM || 0) : 0;
-          let asistF = modData ? (modData.asistF || 0) : 0;
-
-          if (docAsistT === 0) {
-            matM = 0;
-            matF = 0;
-            asistM = 0;
-            asistF = 0;
-          }
-
-          const matT = matM + matF;
-          const asistT = asistM + asistF;
-
-          const pctM = matM > 0 ? (asistM / matM) : 0;
-          const pctF = matF > 0 ? (asistF / matF) : 0;
-          const pctT = matT > 0 ? (asistT / matT) : 0;
-
-          totMatM += matM; totMatF += matF; totMatT += matT;
-          totAsistM += asistM; totAsistF += asistF; totAsistT += asistT;
+          const pctM = calc.matM > 0 ? (calc.asistM / calc.matM) : 0;
+          const pctF = calc.matF > 0 ? (calc.asistF / calc.matF) : 0;
+          const pctT = calc.matT > 0 ? (calc.asistT / calc.matT) : 0;
 
           // Asignar valores
           ws.getCell(r, 6).value = mod.name;
           ws.getCell(r, 7).value = mod.turno;
 
-          ws.getCell(r, 8).value = matM;
-          ws.getCell(r, 9).value = matF;
-          ws.getCell(r, 10).value = matT;
+          ws.getCell(r, 8).value = calc.matM;
+          ws.getCell(r, 9).value = calc.matF;
+          ws.getCell(r, 10).value = calc.matT;
 
-          ws.getCell(r, 11).value = asistM;
-          ws.getCell(r, 12).value = asistF;
-          ws.getCell(r, 13).value = asistT;
+          ws.getCell(r, 11).value = calc.asistM;
+          ws.getCell(r, 12).value = calc.asistF;
+          ws.getCell(r, 13).value = calc.asistT;
 
           ws.getCell(r, 14).value = pctM;
           ws.getCell(r, 15).value = pctF;
@@ -2778,27 +3515,28 @@
 
       state.schools.forEach(school => {
         const schoolRecord = todayData[school.id] || { modalities: {} };
+        const officialMods = getOfficialConsolidatedModalities(school);
         const startR = currentRow;
-        const modCount = school.modalities.length;
+        const modCount = officialMods.length;
         const endR = startR + modCount - 1;
 
-        school.modalities.forEach(mod => {
-          const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
+        officialMods.forEach(mod => {
+          const calc = getOfficialModalityCalculatedData(mod, schoolRecord, false);
           const r = currentRow;
 
-          const cantM = mod.baseDocM;
-          const cantF = mod.baseDocF;
-          const cantT = cantM + cantF;
+          const cantM = calc.baseDocM;
+          const cantF = calc.baseDocF;
+          const cantT = calc.baseDocT;
 
-          const asistM = modData && modData.docAsistM !== undefined ? modData.docAsistM : mod.baseDocM;
-          const asistF = modData && modData.docAsistF !== undefined ? modData.docAsistF : mod.baseDocF;
-          const asistT = asistM + asistF;
+          const asistM = calc.docAsistM;
+          const asistF = calc.docAsistF;
+          const asistT = calc.docAsistT;
 
-          const justM = modData && modData.docJustM !== undefined ? modData.docJustM : 0;
-          const justF = modData && modData.docJustF !== undefined ? modData.docJustF : 0;
+          const justM = calc.docJustM;
+          const justF = calc.docJustF;
 
-          const injustM = modData && modData.docInjustM !== undefined ? modData.docInjustM : 0;
-          const injustF = modData && modData.docInjustF !== undefined ? modData.docInjustF : 0;
+          const injustM = calc.docInjustM;
+          const injustF = calc.docInjustF;
 
           const pctM = cantM > 0 ? (asistM / cantM) : (asistM > 0 ? 1 : '');
           const pctF = cantF > 0 ? (asistF / cantF) : (asistF > 0 ? 1 : '');
@@ -2958,6 +3696,8 @@
   window.app = {
     init,
     selectSchool,
+    onGradeFilterChange,
+    toggleConsolidatedGradeDetail,
     recalculateRow,
     handleFieldInput,
     saveCurrentSchoolAttendance,
