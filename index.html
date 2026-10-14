@@ -133,55 +133,8 @@
             <span>↔️ Desliza horizontalmente la tabla para completar Asistencia y Docentes</span>
           </div>
 
-          <div class="card-body p-0">
-            <div class="tabla-wrap">
-              <table class="asistencia-tabla" id="teacherAttendanceTable">
-                <thead>
-                  <!-- NIVEL 1 DE ENCABEZADOS -->
-                  <tr class="thead-main-row grupo">
-                    <th rowspan="2" class="col-modalidad">Modalidad</th>
-                    <th rowspan="2" class="col-turno">Turno</th>
-                    <th colspan="3" class="th-group-mat">Matrícula</th>
-                    <th colspan="3" class="th-group-asist">Asistencia de hoy</th>
-                    <th rowspan="2" class="th-group-pct">% Asist.</th>
-                    <th colspan="3" class="th-group-doc-asist">Docentes asistieron</th>
-                    <th colspan="3" class="th-group-doc-just">Docentes justificados</th>
-                    <th colspan="3" class="th-group-doc-injust">Docentes injustificados</th>
-                  </tr>
-                  <!-- NIVEL 2 DE ENCABEZADOS (M, F, T) -->
-                  <tr class="thead-sub-row">
-                    <!-- Matrícula -->
-                    <th>M</th>
-                    <th>F</th>
-                    <th class="col-t">T</th>
-                    <!-- Asistencia Estudiantes -->
-                    <th>M</th>
-                    <th>F</th>
-                    <th class="col-t">T</th>
-                    <!-- Docentes Asistencia -->
-                    <th>M</th>
-                    <th>F</th>
-                    <th class="col-t">T</th>
-                    <!-- Docentes Justificados -->
-                    <th>M</th>
-                    <th>F</th>
-                    <th class="col-t">T</th>
-                    <!-- Docentes Injustificados -->
-                    <th>M</th>
-                    <th>F</th>
-                    <th class="col-t">T</th>
-                  </tr>
-                </thead>
-                <tbody id="teacherTableBody">
-                  <!-- Se inyectan las filas según la escuela seleccionada -->
-                </tbody>
-                <tfoot>
-                  <tr class="tfoot-totals-row" id="teacherTableFooter">
-                    <!-- Totales calculados automáticamente de la escuela -->
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+          <div class="card-body p-0" id="desktopAttendanceTablesWrap">
+            <!-- Se inyectan dinámicamente las tablas según las modalidades o grupos de grados del centro -->
           </div>
         </div>
 

@@ -16,41 +16,165 @@
       name: 'CENTRO ESCOLAR ESTRELLA DE BELEN',
       shortName: 'Estrella de Belén',
       modalities: [
+        // 1. Preescolar Formal Multinivel (Matutino)
         {
           id: 'eb-pre-form',
           name: 'PREESCOLAR FORMAL MULTINIVEL',
+          gradeLabel: 'Preescolar Multinivel',
           turno: 'MATUTINO',
+          groupId: 'eb_pre',
+          groupTitle: 'Preescolar Formal Multinivel (Turno Matutino)',
+          groupIcon: '🎨',
           baseMatM: 32,
           baseMatF: 23,
           baseDocM: 0,
           baseDocF: 1
         },
+        // 2. Primaria Regular: 1° y 2° Grado (Matutino)
         {
-          id: 'eb-prim-mat',
-          name: 'PRIMARIA REGULAR',
+          id: 'eb-prim-1',
+          name: 'PRIMARIA REGULAR - 1er GRADO',
+          gradeLabel: '1° Grado',
           turno: 'MATUTINO',
-          baseMatM: 50,
-          baseMatF: 37,
+          groupId: 'eb_prim_mat',
+          groupTitle: 'Primaria Regular: 1° y 2° Grado (Turno Matutino)',
+          groupIcon: '🎒',
+          baseMatM: 25,
+          baseMatF: 19,
           baseDocM: 0,
-          baseDocF: 2
+          baseDocF: 1
         },
         {
-          id: 'eb-prim-vesp',
-          name: 'PRIMARIA REGULAR',
-          turno: 'VESPERTINO',
-          baseMatM: 43,
-          baseMatF: 62,
-          baseDocM: 1,
-          baseDocF: 2
-        },
-        {
-          id: 'eb-sec-mat',
-          name: 'SECUNDARIA DIURNA',
+          id: 'eb-prim-2',
+          name: 'PRIMARIA REGULAR - 2do GRADO',
+          gradeLabel: '2° Grado',
           turno: 'MATUTINO',
-          baseMatM: 28,
-          baseMatF: 43,
-          baseDocM: 3,
-          baseDocF: 3
+          groupId: 'eb_prim_mat',
+          groupTitle: 'Primaria Regular: 1° y 2° Grado (Turno Matutino)',
+          groupIcon: '🎒',
+          baseMatM: 25,
+          baseMatF: 18,
+          baseDocM: 0,
+          baseDocF: 1
+        },
+        // 3. Primaria Regular: 3° a 6° Grado (Vespertino)
+        {
+          id: 'eb-prim-3',
+          name: 'PRIMARIA REGULAR - 3er GRADO',
+          gradeLabel: '3° Grado',
+          turno: 'VESPERTINO',
+          groupId: 'eb_prim_vesp',
+          groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
+          groupIcon: '☀️',
+          baseMatM: 11,
+          baseMatF: 15,
+          baseDocM: 1,
+          baseDocF: 0
+        },
+        {
+          id: 'eb-prim-4',
+          name: 'PRIMARIA REGULAR - 4to GRADO',
+          gradeLabel: '4° Grado',
+          turno: 'VESPERTINO',
+          groupId: 'eb_prim_vesp',
+          groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
+          groupIcon: '☀️',
+          baseMatM: 11,
+          baseMatF: 16,
+          baseDocM: 0,
+          baseDocF: 1
+        },
+        {
+          id: 'eb-prim-5',
+          name: 'PRIMARIA REGULAR - 5to GRADO',
+          gradeLabel: '5° Grado',
+          turno: 'VESPERTINO',
+          groupId: 'eb_prim_vesp',
+          groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
+          groupIcon: '☀️',
+          baseMatM: 10,
+          baseMatF: 15,
+          baseDocM: 0,
+          baseDocF: 1
+        },
+        {
+          id: 'eb-prim-6',
+          name: 'PRIMARIA REGULAR - 6to GRADO',
+          gradeLabel: '6° Grado',
+          turno: 'VESPERTINO',
+          groupId: 'eb_prim_vesp',
+          groupTitle: 'Primaria Regular: 3° a 6° Grado (Turno Vespertino)',
+          groupIcon: '☀️',
+          baseMatM: 11,
+          baseMatF: 16,
+          baseDocM: 0,
+          baseDocF: 0
+        },
+        // 4. Secundaria Diurna: 7mo a 11mo Grado (Matutino)
+        {
+          id: 'eb-sec-7',
+          name: 'SECUNDARIA DIURNA - 7mo GRADO',
+          gradeLabel: '7mo Grado',
+          turno: 'MATUTINO',
+          groupId: 'eb_sec_mat',
+          groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
+          groupIcon: '📐',
+          baseMatM: 6,
+          baseMatF: 9,
+          baseDocM: 1,
+          baseDocF: 0
+        },
+        {
+          id: 'eb-sec-8',
+          name: 'SECUNDARIA DIURNA - 8vo GRADO',
+          gradeLabel: '8vo Grado',
+          turno: 'MATUTINO',
+          groupId: 'eb_sec_mat',
+          groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
+          groupIcon: '📐',
+          baseMatM: 6,
+          baseMatF: 9,
+          baseDocM: 0,
+          baseDocF: 1
+        },
+        {
+          id: 'eb-sec-9',
+          name: 'SECUNDARIA DIURNA - 9no GRADO',
+          gradeLabel: '9no Grado',
+          turno: 'MATUTINO',
+          groupId: 'eb_sec_mat',
+          groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
+          groupIcon: '📐',
+          baseMatM: 5,
+          baseMatF: 8,
+          baseDocM: 1,
+          baseDocF: 0
+        },
+        {
+          id: 'eb-sec-10',
+          name: 'SECUNDARIA DIURNA - 10mo GRADO',
+          gradeLabel: '10mo Grado',
+          turno: 'MATUTINO',
+          groupId: 'eb_sec_mat',
+          groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
+          groupIcon: '📐',
+          baseMatM: 5,
+          baseMatF: 8,
+          baseDocM: 0,
+          baseDocF: 1
+        },
+        {
+          id: 'eb-sec-11',
+          name: 'SECUNDARIA DIURNA - 11mo GRADO',
+          gradeLabel: '11mo Grado',
+          turno: 'MATUTINO',
+          groupId: 'eb_sec_mat',
+          groupTitle: 'Secundaria Diurna: 7mo a 11mo Grado (Turno Matutino)',
+          groupIcon: '📐',
+          baseMatM: 6,
+          baseMatF: 9,
+          baseDocM: 1,
+          baseDocF: 1
         }
       ]
     },
@@ -257,6 +381,16 @@
       }
     } catch (e) {
       state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
+    }
+
+    // Migración para Estrella de Belén (17692): actualizar a tablas por grado si aún tiene la configuración antigua
+    const eb = state.schools.find(s => s.id === '17692');
+    if (!eb || !eb.modalities || !eb.modalities.some(m => m.id === 'eb-prim-1')) {
+      const ebConfig = INITIAL_SCHOOLS_CONFIG.find(s => s.id === '17692');
+      if (eb && ebConfig) {
+        eb.modalities = JSON.parse(JSON.stringify(ebConfig.modalities));
+        saveBaseConfig();
+      }
     }
   }
 
@@ -707,7 +841,7 @@
       if (saveBtn) saveBtn.disabled = false;
     }
 
-    const inputs = document.querySelectorAll('#teacherTableBody input:not([readonly]), #teacherMobileTablesContainer input:not([readonly])');
+    const inputs = document.querySelectorAll('#desktopAttendanceTablesWrap input:not([readonly]), #teacherMobileTablesContainer input:not([readonly])');
     inputs.forEach(input => {
       if (state.isLocked) {
         input.disabled = true;
@@ -1032,272 +1166,374 @@
       statusBadge.className = schoolRecord.saved ? 'tag-status saved' : 'tag-status';
     }
 
-    const tbody = document.getElementById('teacherTableBody');
-    if (tbody) tbody.innerHTML = '';
+    const deskWrap = document.getElementById('desktopAttendanceTablesWrap');
+    if (deskWrap) deskWrap.innerHTML = '';
 
     const mobContainer = document.getElementById('teacherMobileTablesContainer');
     if (mobContainer) mobContainer.innerHTML = '';
 
+    // Agrupar modalidades por grupo (si están definidas en la escuela, ej. Estrella de Belén)
+    const groupsMap = new Map();
     school.modalities.forEach(mod => {
-      const modData = (schoolRecord.modalities && schoolRecord.modalities[mod.id]) || null;
-
-      // Docentes justificados
-      const docJustM = modData ? (modData.docJustM !== undefined ? modData.docJustM : 0) : 0;
-      const docJustF = modData ? (modData.docJustF !== undefined ? modData.docJustF : 0) : 0;
-      const docJustT = (parseInt(docJustM, 10) || 0) + (parseInt(docJustF, 10) || 0);
-
-      // Docentes injustificados
-      const docInjustM = modData ? (modData.docInjustM !== undefined ? modData.docInjustM : 0) : 0;
-      const docInjustF = modData ? (modData.docInjustF !== undefined ? modData.docInjustF : 0) : 0;
-      const docInjustT = (parseInt(docInjustM, 10) || 0) + (parseInt(docInjustF, 10) || 0);
-
-      // Docentes asistieron: Resta automática de ausencias de la plantilla
-      const docAsistM = modData && modData.docAsistM !== undefined 
-        ? modData.docAsistM 
-        : Math.max(0, mod.baseDocM - (docJustM + docInjustM));
-      const docAsistF = modData && modData.docAsistF !== undefined 
-        ? modData.docAsistF 
-        : Math.max(0, mod.baseDocF - (docJustF + docInjustF));
-      const docAsistT = (parseInt(docAsistM, 10) || 0) + (parseInt(docAsistF, 10) || 0);
-      const hasDocenteAtendiendo = docAsistT > 0;
-
-      // Matrícula: usa la de hoy si ya la editó, sino SIEMPRE toma la matrícula base oficial de Dirección
-      // REGLA: Si la asistencia de docente llega a 0, la matrícula actual es 0
-      let matM = modData && modData.matM !== undefined ? modData.matM : mod.baseMatM;
-      let matF = modData && modData.matF !== undefined ? modData.matF : mod.baseMatF;
-      if (!hasDocenteAtendiendo) {
-        matM = 0;
-        matF = 0;
+      const gId = mod.groupId || 'default';
+      if (!groupsMap.has(gId)) {
+        groupsMap.set(gId, {
+          id: gId,
+          title: mod.groupTitle || mod.name,
+          icon: mod.groupIcon || '📋',
+          modalities: []
+        });
       }
-      const matT = matM + matF;
+      groupsMap.get(gId).modalities.push(mod);
+    });
+    const groups = Array.from(groupsMap.values());
+    const isGroupedSchool = groups.length > 1;
 
-      // Asistencia estudiantes (M, F, T): si no hay docente, es 0
-      let asistM = modData ? (modData.asistM !== undefined ? modData.asistM : '') : '';
-      let asistF = modData ? (modData.asistF !== undefined ? modData.asistF : '') : '';
-      if (!hasDocenteAtendiendo) {
-        asistM = 0;
-        asistF = 0;
-      }
-      const asistMNum = parseInt(asistM, 10) || 0;
-      const asistFNum = parseInt(asistF, 10) || 0;
-      const asistT = (asistM !== '' || asistF !== '') ? (asistMNum + asistFNum) : 0;
-
-      // % Asistencia
-      let pct = 0;
-      if (matT > 0 && (asistM !== '' || asistF !== '')) {
-        pct = Math.round((asistT / matT) * 1000) / 10;
-      }
-
-      // ========================================================
-      // 1. FILA DE ESCRITORIO (TABLA COMPLETA HORIZONTAL)
-      // ========================================================
-      if (tbody) {
-        const tr = document.createElement('tr');
-        tr.id = `row-${mod.id}`;
-        tr.innerHTML = `
-          <td class="col-modalidad">
-            <strong>${mod.name}</strong>
-          </td>
-          <td class="col-turno">
-            ${mod.turno}
-          </td>
-
-          <!-- MATRÍCULA ACTUAL (M, F editables; T inalterable) -->
-          <td class="mat">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Matrícula fijada en 0."' : ''}>
-          </td>
-          <td class="mat">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Matrícula fijada en 0."' : ''}>
-          </td>
-          <td class="calc">
-            <input type="text" class="cua-input calc-input" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
-          </td>
-
-          <!-- ASISTENCIA ESTUDIANTES (M, F editables; T inalterable) -->
-          <td class="asist">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Asistencia fijada en 0."' : ''}>
-          </td>
-          <td class="asist">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo esta modalidad. Asistencia fijada en 0."' : ''}>
-          </td>
-          <td class="calc">
-            <input type="text" class="cua-input calc-input" id="asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
-          </td>
-
-          <!-- % ASISTENCIA -->
-          <td class="calc">
-            <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="pct-${mod.id}">${pct.toFixed(1)}%</span>
-          </td>
-
-          <!-- DOCENTES ASISTIERON -->
-          <td class="calc">
-            <input type="text" class="cua-input calc-input" id="doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocM}. Se descuentan ausencias automáticamente.">
-          </td>
-          <td class="calc">
-            <input type="text" class="cua-input calc-input" id="doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocF}. Se descuentan ausencias automáticamente.">
-          </td>
-          <td class="calc">
-            <input type="text" class="cua-input calc-input bold-total" id="doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1">
-          </td>
-
-          <!-- DOCENTES JUSTIFICADOS -->
-          <td class="doc">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-just-m-${mod.id}" data-mod="${mod.id}" data-field="docJustM" value="${docJustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-          </td>
-          <td class="doc">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-just-f-${mod.id}" data-mod="${mod.id}" data-field="docJustF" value="${docJustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-          </td>
-          <td class="calc">
-            <input type="text" class="cua-input calc-input" id="doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
-          </td>
-
-          <!-- DOCENTES INJUSTIFICADOS -->
-          <td class="doc">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-injust-m-${mod.id}" data-mod="${mod.id}" data-field="docInjustM" value="${docInjustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-          </td>
-          <td class="doc">
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-injust-f-${mod.id}" data-mod="${mod.id}" data-field="docInjustF" value="${docInjustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-          </td>
-          <td class="calc">
-            <input type="text" class="cua-input calc-input" id="doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
-          </td>
-        `;
-        tbody.appendChild(tr);
-      }
-
-      // ========================================================
-      // 2. VISTA TELÉFONO: TABLA SEPARADA Y VERTICAL PARA CADA MODALIDAD
-      // ========================================================
-      if (mobContainer) {
-        const mobBlock = document.createElement('div');
-        mobBlock.className = 'mobile-modality-block';
-        mobBlock.id = `mob-block-${mod.id}`;
-        mobBlock.innerHTML = `
-          <div class="mob-mod-header">
-            <div class="mob-mod-title-box">
-              <span class="mob-mod-badge">Modalidad</span>
-              <h3 class="mob-mod-name">${mod.name}</h3>
+    // 1. RENDERIZADO VISTA ESCRITORIO
+    if (deskWrap) {
+      groups.forEach(grp => {
+        const groupCard = document.createElement('div');
+        groupCard.className = isGroupedSchool ? 'desktop-group-table-card' : '';
+        groupCard.innerHTML = `
+          ${isGroupedSchool ? `
+            <div class="desktop-group-table-header">
+              <span class="desktop-group-icon">${grp.icon}</span>
+              <h3>${grp.title}</h3>
             </div>
-            <div class="mob-mod-meta-box">
-              <span class="mob-mod-turno">${mod.turno}</span>
-              <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="mob-pct-${mod.id}">${pct.toFixed(1)}%</span>
-            </div>
-          </div>
-
-          <div class="mob-zero-doc-alert" id="mob-alert-zero-${mod.id}" style="${!hasDocenteAtendiendo ? 'display: flex;' : 'display: none;'}">
-            <span>⚠️</span>
-            <span><strong>Sin docente atendiendo esta modalidad.</strong> Matrícula y Asistencia fijadas automáticamente en 0.</span>
-          </div>
-
-          <div class="mob-table-card">
-            <table class="mob-subtabla">
+          ` : ''}
+          <div class="tabla-wrap">
+            <table class="asistencia-tabla">
               <thead>
-                <tr>
-                  <th class="mob-th-concepto">Concepto</th>
-                  <th class="mob-th-m">Varones (M)</th>
-                  <th class="mob-th-f">Mujeres (F)</th>
-                  <th class="mob-th-t">Total (T)</th>
+                <tr class="thead-main-row grupo">
+                  <th rowspan="2" class="col-modalidad">${isGroupedSchool ? 'Grado / Nivel' : 'Modalidad'}</th>
+                  <th rowspan="2" class="col-turno">Turno</th>
+                  <th colspan="3" class="th-group-mat">Matrícula</th>
+                  <th colspan="3" class="th-group-asist">Asistencia de hoy</th>
+                  <th rowspan="2" class="th-group-pct">% Asist.</th>
+                  <th colspan="3" class="th-group-doc-asist">Docentes asistieron</th>
+                  <th colspan="3" class="th-group-doc-just">Docentes justificados</th>
+                  <th colspan="3" class="th-group-doc-injust">Docentes injustificados</th>
+                </tr>
+                <tr class="thead-sub-row">
+                  <th>M</th><th>F</th><th class="col-t">T</th>
+                  <th>M</th><th>F</th><th class="col-t">T</th>
+                  <th>M</th><th>F</th><th class="col-t">T</th>
+                  <th>M</th><th>F</th><th class="col-t">T</th>
+                  <th>M</th><th>F</th><th class="col-t">T</th>
                 </tr>
               </thead>
-              <tbody>
-                <!-- 1. MATRÍCULA ACTUAL -->
-                <tr class="mob-row-mat">
-                  <td class="mob-td-label">
-                    <span class="mob-dot mat-dot"></span>
-                    <strong>Matrícula</strong>
-                    <small>Editable</small>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input mob-input" id="mob-mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
-                  </td>
-                </tr>
-
-                <!-- 2. ASISTENCIA ESTUDIANTES -->
-                <tr class="mob-row-asist">
-                  <td class="mob-td-label">
-                    <span class="mob-dot asist-dot"></span>
-                    <strong>Asistencia</strong>
-                    <small>De hoy (≤ Matrícula)</small>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input mob-input" id="mob-asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
-                  </td>
-                </tr>
-
-                <!-- 3. DOCENTES ASISTIERON -->
-                <tr class="mob-row-doc-asist">
-                  <td class="mob-td-label">
-                    <span class="mob-dot doc-asist-dot"></span>
-                    <strong>Docentes Asistieron</strong>
-                    <small>Plantilla: ${mod.baseDocM + mod.baseDocF} (${mod.baseDocM}M, ${mod.baseDocF}F)</small>
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input mob-input" id="mob-doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocM}">
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input mob-input" id="mob-doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocF}">
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input bold-total mob-input" id="mob-doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1">
-                  </td>
-                </tr>
-
-                <!-- 4. DOCENTES JUSTIFICADOS -->
-                <tr class="mob-row-doc-just">
-                  <td class="mob-td-label">
-                    <span class="mob-dot doc-dot"></span>
-                    <strong>Docentes Justificados</strong>
-                    <small>Permisos oficiales</small>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-just-m-${mod.id}" data-mod="${mod.id}" data-field="docJustM" value="${docJustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-just-f-${mod.id}" data-mod="${mod.id}" data-field="docJustF" value="${docJustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input mob-input" id="mob-doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
-                  </td>
-                </tr>
-
-                <!-- 5. DOCENTES INJUSTIFICADOS -->
-                <tr class="mob-row-doc-injust">
-                  <td class="mob-td-label">
-                    <span class="mob-dot doc-dot"></span>
-                    <strong>Docentes Injustificados</strong>
-                    <small>Faltas</small>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-injust-m-${mod.id}" data-mod="${mod.id}" data-field="docInjustM" value="${docInjustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                  </td>
-                  <td>
-                    <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-injust-f-${mod.id}" data-mod="${mod.id}" data-field="docInjustF" value="${docInjustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
-                  </td>
-                  <td>
-                    <input type="text" class="cua-input calc-input mob-input" id="mob-doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
-                  </td>
-                </tr>
+              <tbody id="tbody-${grp.id}">
               </tbody>
+              ${isGroupedSchool ? `
+                <tfoot>
+                  <tr class="tfoot-totals-row subtotal-row" id="tfoot-subtotal-${grp.id}">
+                  </tr>
+                </tfoot>
+              ` : `
+                <tfoot>
+                  <tr class="tfoot-totals-row" id="teacherTableFooter">
+                  </tr>
+                </tfoot>
+              `}
             </table>
           </div>
         `;
-        mobContainer.appendChild(mobBlock);
+        deskWrap.appendChild(groupCard);
+      });
+
+      // Si es una escuela agrupada con múltiples tablas, agregar la tarjeta de TOTAL GENERAL
+      if (isGroupedSchool) {
+        const grandTotalCard = document.createElement('div');
+        grandTotalCard.className = 'desktop-grand-total-card';
+        grandTotalCard.innerHTML = `
+          <div class="grand-total-header">
+            <span>📊</span>
+            <span>TOTAL GENERAL DE LA ESCUELA (${school.name})</span>
+          </div>
+          <div class="tabla-wrap">
+            <table class="asistencia-tabla">
+              <tfoot>
+                <tr class="tfoot-totals-row" id="teacherTableFooter">
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        `;
+        deskWrap.appendChild(grandTotalCard);
+      }
+    }
+
+    // 2. RENDERIZADO DE FILAS Y VISTA TELÉFONO
+    groups.forEach(grp => {
+      const tbody = document.getElementById(`tbody-${grp.id}`);
+
+      if (mobContainer && isGroupedSchool) {
+        const secTitle = document.createElement('div');
+        secTitle.className = 'mob-group-section-title';
+        secTitle.innerHTML = `
+          <span class="mob-group-icon">${grp.icon}</span>
+          <h4>${grp.title}</h4>
+        `;
+        mobContainer.appendChild(secTitle);
       }
 
-      // Calcular validación de fila inicial
-      recalculateRow(mod.id);
+      grp.modalities.forEach(mod => {
+        const modData = (schoolRecord.modalities && schoolRecord.modalities[mod.id]) || null;
+
+        // Docentes justificados
+        const docJustM = modData ? (modData.docJustM !== undefined ? modData.docJustM : 0) : 0;
+        const docJustF = modData ? (modData.docJustF !== undefined ? modData.docJustF : 0) : 0;
+        const docJustT = (parseInt(docJustM, 10) || 0) + (parseInt(docJustF, 10) || 0);
+
+        // Docentes injustificados
+        const docInjustM = modData ? (modData.docInjustM !== undefined ? modData.docInjustM : 0) : 0;
+        const docInjustF = modData ? (modData.docInjustF !== undefined ? modData.docInjustF : 0) : 0;
+        const docInjustT = (parseInt(docInjustM, 10) || 0) + (parseInt(docInjustF, 10) || 0);
+
+        // Docentes asistieron: Resta automática de ausencias de la plantilla
+        const docAsistM = modData && modData.docAsistM !== undefined 
+          ? modData.docAsistM 
+          : Math.max(0, mod.baseDocM - (docJustM + docInjustM));
+        const docAsistF = modData && modData.docAsistF !== undefined 
+          ? modData.docAsistF 
+          : Math.max(0, mod.baseDocF - (docJustF + docInjustF));
+        const docAsistT = (parseInt(docAsistM, 10) || 0) + (parseInt(docAsistF, 10) || 0);
+        const hasDocenteAtendiendo = docAsistT > 0;
+
+        // Matrícula
+        let matM = modData && modData.matM !== undefined ? modData.matM : mod.baseMatM;
+        let matF = modData && modData.matF !== undefined ? modData.matF : mod.baseMatF;
+        if (!hasDocenteAtendiendo) {
+          matM = 0;
+          matF = 0;
+        }
+        const matT = matM + matF;
+
+        // Asistencia estudiantes
+        let asistM = modData ? (modData.asistM !== undefined ? modData.asistM : '') : '';
+        let asistF = modData ? (modData.asistF !== undefined ? modData.asistF : '') : '';
+        if (!hasDocenteAtendiendo) {
+          asistM = 0;
+          asistF = 0;
+        }
+        const asistMNum = parseInt(asistM, 10) || 0;
+        const asistFNum = parseInt(asistF, 10) || 0;
+        const asistT = (asistM !== '' || asistF !== '') ? (asistMNum + asistFNum) : 0;
+
+        // % Asistencia
+        let pct = 0;
+        if (matT > 0 && (asistM !== '' || asistF !== '')) {
+          pct = Math.round((asistT / matT) * 1000) / 10;
+        }
+
+        const displayName = mod.gradeLabel || mod.name;
+
+        // Fila escritorio
+        if (tbody) {
+          const tr = document.createElement('tr');
+          tr.id = `row-${mod.id}`;
+          tr.innerHTML = `
+            <td class="col-modalidad">
+              <strong>${displayName}</strong>
+            </td>
+            <td class="col-turno">
+              ${mod.turno}
+            </td>
+
+            <!-- MATRÍCULA ACTUAL -->
+            <td class="mat">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Matrícula fijada en 0."' : ''}>
+            </td>
+            <td class="mat">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Matrícula fijada en 0."' : ''}>
+            </td>
+            <td class="calc">
+              <input type="text" class="cua-input calc-input" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
+            </td>
+
+            <!-- ASISTENCIA ESTUDIANTES -->
+            <td class="asist">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Asistencia fijada en 0."' : ''}>
+            </td>
+            <td class="asist">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Asistencia fijada en 0."' : ''}>
+            </td>
+            <td class="calc">
+              <input type="text" class="cua-input calc-input" id="asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
+            </td>
+
+            <!-- % ASISTENCIA -->
+            <td class="calc">
+              <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="pct-${mod.id}">${pct.toFixed(1)}%</span>
+            </td>
+
+            <!-- DOCENTES ASISTIERON -->
+            <td class="calc">
+              <input type="text" class="cua-input calc-input" id="doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocM}. Se descuentan ausencias automáticamente.">
+            </td>
+            <td class="calc">
+              <input type="text" class="cua-input calc-input" id="doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocF}. Se descuentan ausencias automáticamente.">
+            </td>
+            <td class="calc">
+              <input type="text" class="cua-input calc-input bold-total" id="doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1">
+            </td>
+
+            <!-- DOCENTES JUSTIFICADOS -->
+            <td class="doc">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-just-m-${mod.id}" data-mod="${mod.id}" data-field="docJustM" value="${docJustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+            </td>
+            <td class="doc">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-just-f-${mod.id}" data-mod="${mod.id}" data-field="docJustF" value="${docJustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+            </td>
+            <td class="calc">
+              <input type="text" class="cua-input calc-input" id="doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
+            </td>
+
+            <!-- DOCENTES INJUSTIFICADOS -->
+            <td class="doc">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-injust-m-${mod.id}" data-mod="${mod.id}" data-field="docInjustM" value="${docInjustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+            </td>
+            <td class="doc">
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input" id="doc-injust-f-${mod.id}" data-mod="${mod.id}" data-field="docInjustF" value="${docInjustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+            </td>
+            <td class="calc">
+              <input type="text" class="cua-input calc-input" id="doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+        // Bloque vista teléfono
+        if (mobContainer) {
+          const mobBlock = document.createElement('div');
+          mobBlock.className = 'mobile-modality-block';
+          mobBlock.id = `mob-block-${mod.id}`;
+          mobBlock.innerHTML = `
+            <div class="mob-mod-header">
+              <div class="mob-mod-title-box">
+                <span class="mob-mod-badge">${isGroupedSchool ? 'Grado' : 'Modalidad'}</span>
+                <h3 class="mob-mod-name">${displayName}</h3>
+              </div>
+              <div class="mob-mod-meta-box">
+                <span class="mob-mod-turno">${mod.turno}</span>
+                <span class="pct-cell-badge ${pct >= 85 ? 'pct-high' : (pct >= 70 ? 'pct-med' : 'pct-low')}" id="mob-pct-${mod.id}">${pct.toFixed(1)}%</span>
+              </div>
+            </div>
+
+            <div class="mob-zero-doc-alert" id="mob-alert-zero-${mod.id}" style="${!hasDocenteAtendiendo ? 'display: flex;' : 'display: none;'}">
+              <span>⚠️</span>
+              <span><strong>Sin docente atendiendo este grado.</strong> Matrícula y Asistencia fijadas automáticamente en 0.</span>
+            </div>
+
+            <div class="mob-table-card">
+              <table class="mob-subtabla">
+                <thead>
+                  <tr>
+                    <th class="mob-th-concepto">Concepto</th>
+                    <th class="mob-th-m">Varones (M)</th>
+                    <th class="mob-th-f">Mujeres (F)</th>
+                    <th class="mob-th-t">Total (T)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- 1. MATRÍCULA ACTUAL -->
+                  <tr class="mob-row-mat">
+                    <td class="mob-td-label">
+                      <span class="mob-dot mat-dot"></span>
+                      <strong>Matrícula</strong>
+                      <small>Editable</small>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'matF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input mob-input" id="mob-mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
+                    </td>
+                  </tr>
+
+                  <!-- 2. ASISTENCIA ESTUDIANTES -->
+                  <tr class="mob-row-asist">
+                    <td class="mob-td-label">
+                      <span class="mob-dot asist-dot"></span>
+                      <strong>Asistencia</strong>
+                      <small>De hoy (≤ Matrícula)</small>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input mob-input" id="mob-asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
+                    </td>
+                  </tr>
+
+                  <!-- 3. DOCENTES ASISTIERON -->
+                  <tr class="mob-row-doc-asist">
+                    <td class="mob-td-label">
+                      <span class="mob-dot doc-asist-dot"></span>
+                      <strong>Docentes Asistieron</strong>
+                      <small>Plantilla: ${mod.baseDocM + mod.baseDocF} (${mod.baseDocM}M, ${mod.baseDocF}F)</small>
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input mob-input" id="mob-doc-asist-m-${mod.id}" value="${docAsistM}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocM}">
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input mob-input" id="mob-doc-asist-f-${mod.id}" value="${docAsistF}" readonly tabindex="-1" title="Plantilla: ${mod.baseDocF}">
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input bold-total mob-input" id="mob-doc-asist-t-${mod.id}" value="${docAsistT}" readonly tabindex="-1">
+                    </td>
+                  </tr>
+
+                  <!-- 4. DOCENTES JUSTIFICADOS -->
+                  <tr class="mob-row-doc-just">
+                    <td class="mob-td-label">
+                      <span class="mob-dot doc-dot"></span>
+                      <strong>Docentes Justificados</strong>
+                      <small>Permisos oficiales</small>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-just-m-${mod.id}" data-mod="${mod.id}" data-field="docJustM" value="${docJustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-just-f-${mod.id}" data-mod="${mod.id}" data-field="docJustF" value="${docJustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docJustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input mob-input" id="mob-doc-just-t-${mod.id}" value="${docJustT}" readonly tabindex="-1">
+                    </td>
+                  </tr>
+
+                  <!-- 5. DOCENTES INJUSTIFICADOS -->
+                  <tr class="mob-row-doc-injust">
+                    <td class="mob-td-label">
+                      <span class="mob-dot doc-dot"></span>
+                      <strong>Docentes Injustificados</strong>
+                      <small>Faltas</small>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-injust-m-${mod.id}" data-mod="${mod.id}" data-field="docInjustM" value="${docInjustM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustM')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+                    </td>
+                    <td>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input doc-input mob-input" id="mob-doc-injust-f-${mod.id}" data-mod="${mod.id}" data-field="docInjustF" value="${docInjustF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'docInjustF')" onfocus="this.select()" ${state.isLocked ? 'disabled' : ''}>
+                    </td>
+                    <td>
+                      <input type="text" class="cua-input calc-input mob-input" id="mob-doc-injust-t-${mod.id}" value="${docInjustT}" readonly tabindex="-1">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+          mobContainer.appendChild(mobBlock);
+        }
+
+        recalculateRow(mod.id);
+      });
     });
 
     recalculateTeacherTotals();
@@ -1567,36 +1803,105 @@
     let totDocJustM = 0, totDocJustF = 0, totDocJustT = 0;
     let totDocInjustM = 0, totDocInjustF = 0, totDocInjustT = 0;
 
+    // Agrupar por grupo para calcular subtotales si aplica
+    const groupsMap = new Map();
     school.modalities.forEach(mod => {
-      const matM = parseInt(getFieldVal(`mat-m-${mod.id}`), 10) || 0;
-      const matF = parseInt(getFieldVal(`mat-f-${mod.id}`), 10) || 0;
-      totMatM += matM;
-      totMatF += matF;
-      totMatT += (matM + matF);
+      const gId = mod.groupId || 'default';
+      if (!groupsMap.has(gId)) {
+        groupsMap.set(gId, []);
+      }
+      groupsMap.get(gId).push(mod);
+    });
 
-      const asistM = parseInt(getFieldVal(`asist-m-${mod.id}`), 10) || 0;
-      const asistF = parseInt(getFieldVal(`asist-f-${mod.id}`), 10) || 0;
-      totAsistM += asistM;
-      totAsistF += asistF;
-      totAsistT += (asistM + asistF);
+    groupsMap.forEach((mods, gId) => {
+      let subMatM = 0, subMatF = 0, subMatT = 0;
+      let subAsistM = 0, subAsistF = 0, subAsistT = 0;
+      let subDocAsistM = 0, subDocAsistF = 0, subDocAsistT = 0;
+      let subDocJustM = 0, subDocJustF = 0, subDocJustT = 0;
+      let subDocInjustM = 0, subDocInjustF = 0, subDocInjustT = 0;
 
-      const docAsistM = parseInt(getFieldVal(`doc-asist-m-${mod.id}`), 10) || 0;
-      const docAsistF = parseInt(getFieldVal(`doc-asist-f-${mod.id}`), 10) || 0;
-      totDocAsistM += docAsistM;
-      totDocAsistF += docAsistF;
-      totDocAsistT += (docAsistM + docAsistF);
+      mods.forEach(mod => {
+        const matM = parseInt(getFieldVal(`mat-m-${mod.id}`), 10) || 0;
+        const matF = parseInt(getFieldVal(`mat-f-${mod.id}`), 10) || 0;
+        subMatM += matM;
+        subMatF += matF;
+        subMatT += (matM + matF);
 
-      const docJustM = parseInt(getFieldVal(`doc-just-m-${mod.id}`), 10) || 0;
-      const docJustF = parseInt(getFieldVal(`doc-just-f-${mod.id}`), 10) || 0;
-      totDocJustM += docJustM;
-      totDocJustF += docJustF;
-      totDocJustT += (docJustM + docJustF);
+        const asistM = parseInt(getFieldVal(`asist-m-${mod.id}`), 10) || 0;
+        const asistF = parseInt(getFieldVal(`asist-f-${mod.id}`), 10) || 0;
+        subAsistM += asistM;
+        subAsistF += asistF;
+        subAsistT += (asistM + asistF);
 
-      const docInjustM = parseInt(getFieldVal(`doc-injust-m-${mod.id}`), 10) || 0;
-      const docInjustF = parseInt(getFieldVal(`doc-injust-f-${mod.id}`), 10) || 0;
-      totDocInjustM += docInjustM;
-      totDocInjustF += docInjustF;
-      totDocInjustT += (docInjustM + docInjustF);
+        const docAsistM = parseInt(getFieldVal(`doc-asist-m-${mod.id}`), 10) || 0;
+        const docAsistF = parseInt(getFieldVal(`doc-asist-f-${mod.id}`), 10) || 0;
+        subDocAsistM += docAsistM;
+        subDocAsistF += docAsistF;
+        subDocAsistT += (docAsistM + docAsistF);
+
+        const docJustM = parseInt(getFieldVal(`doc-just-m-${mod.id}`), 10) || 0;
+        const docJustF = parseInt(getFieldVal(`doc-just-f-${mod.id}`), 10) || 0;
+        subDocJustM += docJustM;
+        subDocJustF += docJustF;
+        subDocJustT += (docJustM + docJustF);
+
+        const docInjustM = parseInt(getFieldVal(`doc-injust-m-${mod.id}`), 10) || 0;
+        const docInjustF = parseInt(getFieldVal(`doc-injust-f-${mod.id}`), 10) || 0;
+        subDocInjustM += docInjustM;
+        subDocInjustF += docInjustF;
+        subDocInjustT += (docInjustM + docInjustF);
+      });
+
+      // Sumar al total general de la escuela
+      totMatM += subMatM;
+      totMatF += subMatF;
+      totMatT += subMatT;
+      totAsistM += subAsistM;
+      totAsistF += subAsistF;
+      totAsistT += subAsistT;
+      totDocAsistM += subDocAsistM;
+      totDocAsistF += subDocAsistF;
+      totDocAsistT += subDocAsistT;
+      totDocJustM += subDocJustM;
+      totDocJustF += subDocJustF;
+      totDocJustT += subDocJustT;
+      totDocInjustM += subDocInjustM;
+      totDocInjustF += subDocInjustF;
+      totDocInjustT += subDocInjustT;
+
+      let subPct = 0;
+      if (subMatT > 0) {
+        subPct = Math.round((subAsistT / subMatT) * 1000) / 10;
+      }
+
+      // Si existe fila de subtotal para este grupo en el escritorio
+      const subFoot = document.getElementById(`tfoot-subtotal-${gId}`);
+      if (subFoot) {
+        subFoot.innerHTML = `
+          <td colspan="2" class="col-modalidad subtotal-label-col">SUBTOTAL:</td>
+          <td class="subtotal-val">${subMatM}</td>
+          <td class="subtotal-val">${subMatF}</td>
+          <td class="subtotal-val highlight">${subMatT}</td>
+
+          <td class="subtotal-val">${subAsistM}</td>
+          <td class="subtotal-val">${subAsistF}</td>
+          <td class="subtotal-val highlight">${subAsistT}</td>
+
+          <td class="subtotal-val"><span class="pct-cell-badge ${subPct >= 85 ? 'pct-high' : (subPct >= 70 ? 'pct-med' : 'pct-low')}">${subPct.toFixed(1)}%</span></td>
+
+          <td class="subtotal-val">${subDocAsistM}</td>
+          <td class="subtotal-val">${subDocAsistF}</td>
+          <td class="subtotal-val highlight">${subDocAsistT}</td>
+
+          <td class="subtotal-val">${subDocJustM}</td>
+          <td class="subtotal-val">${subDocJustF}</td>
+          <td class="subtotal-val highlight">${subDocJustT}</td>
+
+          <td class="subtotal-val">${subDocInjustM}</td>
+          <td class="subtotal-val">${subDocInjustF}</td>
+          <td class="subtotal-val highlight">${subDocInjustT}</td>
+        `;
+      }
     });
 
     let overallPct = 0;
@@ -1604,11 +1909,13 @@
       overallPct = Math.round((totAsistT / totMatT) * 1000) / 10;
     }
 
+    const isGroupedSchool = groupsMap.size > 1;
+
     // 1. Actualizar pie de tabla en vista escritorio
     const tfoot = document.getElementById('teacherTableFooter');
     if (tfoot) {
       tfoot.innerHTML = `
-        <td colspan="2" class="col-modalidad sticky-footer-col" style="text-align: right; font-weight: 800; padding-right: 0.6rem;">TOTAL:</td>
+        <td colspan="2" class="col-modalidad sticky-footer-col" style="text-align: right; font-weight: 800; padding-right: 0.6rem;">${isGroupedSchool ? 'TOTAL GENERAL ESCUELA:' : 'TOTAL:'}</td>
         <td class="tfoot-total-val">${totMatM}</td>
         <td class="tfoot-total-val">${totMatF}</td>
         <td class="tfoot-total-val highlight-total">${totMatT}</td>
@@ -1617,7 +1924,7 @@
         <td class="tfoot-total-val">${totAsistF}</td>
         <td class="tfoot-total-val highlight-total">${totAsistT}</td>
 
-        <td class="tfoot-total-val"><span class="pct-cell-badge pct-high">${overallPct.toFixed(1)}%</span></td>
+        <td class="tfoot-total-val"><span class="pct-cell-badge ${overallPct >= 85 ? 'pct-high' : (overallPct >= 70 ? 'pct-med' : 'pct-low')}">${overallPct.toFixed(1)}%</span></td>
 
         <td class="tfoot-total-val">${totDocAsistM}</td>
         <td class="tfoot-total-val">${totDocAsistF}</td>
