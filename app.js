@@ -3735,7 +3735,7 @@
             font: { name: 'Arial', size: 9 },
             alignment: { horizontal: 'center', vertical: 'middle' },
             border: thinBorder,
-            numFmt: '0.00"%"'
+            numFmt: '0%'
           });
           ws.getCell(r, 16).font = { name: 'Arial', size: 9, bold: true };
           ws.getCell(r, 16).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9E6' } };
@@ -3807,7 +3807,7 @@
       ws.getCell(totRowEst, 3).alignment = { horizontal: 'center', vertical: 'middle' };
 
       [8, 9, 10, 11, 12, 13].forEach(c => ws.getCell(totRowEst, c).numFmt = '#,##0');
-      [14, 15, 16].forEach(c => ws.getCell(totRowEst, c).numFmt = '0.00"%"');
+      [14, 15, 16].forEach(c => ws.getCell(totRowEst, c).numFmt = '0%');
 
       // ==========================================
       // 2. TABLA: ASISTENCIA DIARIA DOCENTES
@@ -3996,7 +3996,7 @@
             font: { name: 'Arial', size: 9 },
             alignment: { horizontal: 'center', vertical: 'middle' },
             border: thinBorder,
-            numFmt: '0.00"%"'
+            numFmt: '0%'
           });
           ws.getCell(r, 20).font = { name: 'Arial', size: 9, bold: true };
           ws.getCell(r, 20).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBF1F5' } };
@@ -4061,7 +4061,7 @@
       ws.getCell(totRowDoc, 3).alignment = { horizontal: 'center', vertical: 'middle' };
 
       [8, 9, 10, 11, 12, 13].forEach(c => ws.getCell(totRowDoc, c).numFmt = '#,##0');
-      [18, 19, 20].forEach(c => ws.getCell(totRowDoc, c).numFmt = '0.00"%"');
+      [18, 19, 20].forEach(c => ws.getCell(totRowDoc, c).numFmt = '0%');
 
       // GENERAR BUFFER Y DESCARGAR
       const buffer = await wb.xlsx.writeBuffer();
