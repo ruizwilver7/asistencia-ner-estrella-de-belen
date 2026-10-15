@@ -2230,6 +2230,20 @@ tr.mob-row-doc-injust { background: #FAF7EF; }
   text-align: center;
 }
 
+
+
+/* ALERTA SECUNDARIA REGULAR - DOCENTE GUÍA AUSENTE CON GRUPO ATENDIDO */
+.mob-sec-alert {
+  margin-top: 0.45rem;
+  padding: 0.35rem 0.6rem;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  border-radius: 5px;
+  font-size: 0.73rem;
+  color: #1e40af;
+  line-height: 1.25;
+}
+
 /* ================= IMPRESIÓN ================= */
 @media print {
   .app-header, .school-selection-section, .admin-actions, .simulator-box, .btn, .upload-dropzone {

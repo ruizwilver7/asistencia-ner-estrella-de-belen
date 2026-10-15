@@ -175,6 +175,63 @@
           baseMatF: 5,
           baseDocM: 1,
           baseDocF: 1
+        },
+        // 5. Educación de Jóvenes y Adultos: Ciclos (Fin de Semana / Sábado y Domingo)
+        {
+          id: 'eb-ciclo-3a',
+          name: 'III CICLO - SECCIÓN A',
+          gradeLabel: 'III Ciclo A',
+          turno: 'SABATINO',
+          groupId: 'eb_ciclos_3',
+          groupTitle: 'Educación de Jóvenes y Adultos: III Ciclo (Fin de Semana)',
+          groupIcon: '📚',
+          baseMatM: 28,
+          baseMatF: 38,
+          baseDocM: 0,
+          baseDocF: 1,
+          isWeekendOnly: true
+        },
+        {
+          id: 'eb-ciclo-3b',
+          name: 'III CICLO - SECCIÓN B',
+          gradeLabel: 'III Ciclo B',
+          turno: 'SABATINO',
+          groupId: 'eb_ciclos_3',
+          groupTitle: 'Educación de Jóvenes y Adultos: III Ciclo (Fin de Semana)',
+          groupIcon: '📚',
+          baseMatM: 27,
+          baseMatF: 21,
+          baseDocM: 1,
+          baseDocF: 0,
+          isWeekendOnly: true
+        },
+        {
+          id: 'eb-ciclo-5a',
+          name: 'V CICLO - SECCIÓN A',
+          gradeLabel: 'V Ciclo A',
+          turno: 'SABATINO',
+          groupId: 'eb_ciclos_5',
+          groupTitle: 'Educación de Jóvenes y Adultos: V Ciclo (Fin de Semana)',
+          groupIcon: '🎓',
+          baseMatM: 14,
+          baseMatF: 21,
+          baseDocM: 0,
+          baseDocF: 1,
+          isWeekendOnly: true
+        },
+        {
+          id: 'eb-ciclo-5b',
+          name: 'V CICLO - SECCIÓN B',
+          gradeLabel: 'V Ciclo B',
+          turno: 'SABATINO',
+          groupId: 'eb_ciclos_5',
+          groupTitle: 'Educación de Jóvenes y Adultos: V Ciclo (Fin de Semana)',
+          groupIcon: '🎓',
+          baseMatM: 17,
+          baseMatF: 27,
+          baseDocM: 1,
+          baseDocF: 0,
+          isWeekendOnly: true
         }
       ]
     },
@@ -358,6 +415,121 @@
   };
 
   /**
+   * Configuración oficial inmutable de los Ciclos Sabatinos de Estrella de Belén (17692)
+   * Datos del Informe Cuantitativo III Corte:
+   * - III Ciclo A: Matrícula M: 28, F: 38 (Total: 66) | Docente: 1 F (Varones: 0, Mujeres: 1)
+   * - III Ciclo B: Matrícula M: 27, F: 21 (Total: 48) | Docente: 1 M (Varones: 1, Mujeres: 0)
+   * - V Ciclo A: Matrícula M: 14, F: 21 (Total: 35) | Docente: 1 F (Varones: 0, Mujeres: 1)
+   * - V Ciclo B: Matrícula M: 17, F: 27 (Total: 44) | Docente: 1 M (Varones: 1, Mujeres: 0)
+   */
+  const OFFICIAL_CICLOS_CONFIG = [
+    {
+      id: 'eb-ciclo-3a',
+      name: 'III CICLO - SECCIÓN A',
+      gradeLabel: 'III Ciclo A',
+      turno: 'SABATINO',
+      groupId: 'eb_ciclos_3',
+      groupTitle: 'Educación de Jóvenes y Adultos: III Ciclo (Fin de Semana)',
+      groupIcon: '📚',
+      baseMatM: 28,
+      baseMatF: 38,
+      baseDocM: 0,
+      baseDocF: 1,
+      isWeekendOnly: true
+    },
+    {
+      id: 'eb-ciclo-3b',
+      name: 'III CICLO - SECCIÓN B',
+      gradeLabel: 'III Ciclo B',
+      turno: 'SABATINO',
+      groupId: 'eb_ciclos_3',
+      groupTitle: 'Educación de Jóvenes y Adultos: III Ciclo (Fin de Semana)',
+      groupIcon: '📚',
+      baseMatM: 27,
+      baseMatF: 21,
+      baseDocM: 1,
+      baseDocF: 0,
+      isWeekendOnly: true
+    },
+    {
+      id: 'eb-ciclo-5a',
+      name: 'V CICLO - SECCIÓN A',
+      gradeLabel: 'V Ciclo A',
+      turno: 'SABATINO',
+      groupId: 'eb_ciclos_5',
+      groupTitle: 'Educación de Jóvenes y Adultos: V Ciclo (Fin de Semana)',
+      groupIcon: '🎓',
+      baseMatM: 14,
+      baseMatF: 21,
+      baseDocM: 0,
+      baseDocF: 1,
+      isWeekendOnly: true
+    },
+    {
+      id: 'eb-ciclo-5b',
+      name: 'V CICLO - SECCIÓN B',
+      gradeLabel: 'V Ciclo B',
+      turno: 'SABATINO',
+      groupId: 'eb_ciclos_5',
+      groupTitle: 'Educación de Jóvenes y Adultos: V Ciclo (Fin de Semana)',
+      groupIcon: '🎓',
+      baseMatM: 17,
+      baseMatF: 27,
+      baseDocM: 1,
+      baseDocF: 0,
+      isWeekendOnly: true
+    }
+  ];
+
+  /**
+   * Garantiza que la escuela Estrella de Belén contenga íntegramente sus 16 modalidades oficiales:
+   * 12 modalidades regulares (L-V) + 4 Ciclos sabatinos (Fin de semana) con sus matrículas y plantillas exactas.
+   */
+  function ensureSchoolsMasterConfig(schoolsList) {
+    if (!schoolsList || !Array.isArray(schoolsList)) return false;
+    let modified = false;
+    const eb = schoolsList.find(s => s.id === '17692');
+    if (!eb) return false;
+    if (!eb.modalities || !Array.isArray(eb.modalities)) {
+      eb.modalities = [];
+      modified = true;
+    }
+
+    OFFICIAL_CICLOS_CONFIG.forEach(cfg => {
+      const idx = eb.modalities.findIndex(m => m.id === cfg.id);
+      if (idx === -1) {
+        eb.modalities.push(JSON.parse(JSON.stringify(cfg)));
+        modified = true;
+      } else {
+        const m = eb.modalities[idx];
+        if (
+          m.baseMatM !== cfg.baseMatM ||
+          m.baseMatF !== cfg.baseMatF ||
+          m.baseDocM !== cfg.baseDocM ||
+          m.baseDocF !== cfg.baseDocF ||
+          m.groupId !== cfg.groupId ||
+          !m.isWeekendOnly
+        ) {
+          m.baseMatM = cfg.baseMatM;
+          m.baseMatF = cfg.baseMatF;
+          m.baseDocM = cfg.baseDocM;
+          m.baseDocF = cfg.baseDocF;
+          m.groupId = cfg.groupId;
+          m.groupTitle = cfg.groupTitle;
+          m.groupIcon = cfg.groupIcon;
+          m.gradeLabel = cfg.gradeLabel;
+          m.name = cfg.name;
+          m.turno = cfg.turno;
+          m.isWeekendOnly = true;
+          modified = true;
+        }
+      }
+    });
+
+    return modified;
+  }
+
+  /**
    * Inicialización del sistema
    */
   function init() {
@@ -368,6 +540,9 @@
     initCloudConfig();
     setupClockTimer();
     setupCloudAutoSyncTimer();
+    if (isWeekendActive()) {
+      state.selectedGradeId = 'all-ciclos';
+    }
     renderSchoolsTiles();
     renderTeacherTable();
     checkTimeLockout();
@@ -418,6 +593,10 @@
     const eb = state.schools.find(s => s.id === '17692');
     if (!eb || !eb.modalities || eb.modalities.length < 12 || !eb.modalities.some(m => m.id === 'eb-prim-1')) {
       state.schools = JSON.parse(JSON.stringify(INITIAL_SCHOOLS_CONFIG));
+      saveBaseConfig();
+    }
+    const cyclesUpdated = ensureSchoolsMasterConfig(state.schools);
+    if (cyclesUpdated) {
       saveBaseConfig();
     }
 
@@ -612,13 +791,12 @@
 
         // 1. Sincronizar catálogo base oficial de escuelas (matrícula oficial y plantilla)
         if (remoteState.schools && Array.isArray(remoteState.schools) && remoteState.schools.length > 0) {
-          const remoteEB = remoteState.schools.find(s => s.id === '17692');
-          if (remoteEB && remoteEB.modalities && remoteEB.modalities.length >= 12) {
-            state.schools = remoteState.schools;
-            saveBaseConfig();
-            changesApplied = true;
-          } else {
-            console.log('El servidor en la nube tiene una estructura desactualizada. Se conserva la estructura local de 12 grados y se actualiza el servidor.');
+          state.schools = remoteState.schools;
+          const masterUpdated = ensureSchoolsMasterConfig(state.schools);
+          saveBaseConfig();
+          changesApplied = true;
+          if (masterUpdated) {
+            console.log('El servidor en la nube no tenía los 4 Ciclos oficiales completos. Se aseguraron localmente y se actualiza el servidor.');
             syncToCloudBaseConfig();
           }
         }
@@ -731,16 +909,58 @@
   }
 
   /**
-   * MAPEO DE MODALIDADES OFICIALES DEL CONSOLIDADO (14 FILAS OFICIALES)
-   * 1. Centro Escolar Estrella de Belén (4 modalidades oficiales):
-   *    - PREESCOLAR FORMAL MULTINIVEL (Matutino) [eb-pre-form]
-   *    - PRIMARIA REGULAR (Matutino) [eb-prim-1, eb-prim-2]
-   *    - PRIMARIA REGULAR (Vespertino) [eb-prim-3, eb-prim-4, eb-prim-5, eb-prim-6]
-   *    - SECUNDARIA DIURNA (Matutino) [eb-sec-7, eb-sec-8, eb-sec-9, eb-sec-10, eb-sec-11]
-   * 2. Otras 5 escuelas (2 modalidades cada una, 10 filas):
-   *    - PREESCOLAR COMUNITARIO MULTINIVEL (Matutino)
-   *    - PRIMARIA MULTIGRADO (Matutino)
-   * TOTAL: 14 FILAS OFICIALES EN EL CONSOLIDADO.
+   * Determina si una modalidad corresponde a Secundaria Regular (o Diurna).
+   * EXCEPCIÓN: Si falta el docente guía (docAsistT === 0), la Matrícula Actual
+   * se mantiene intacta (no se borra ni se pone en cero) y la asistencia puede ser
+   * ingresada con normalidad ya que el grupo es atendido por otro docente/reemplazo.
+   */
+  function isSecundariaMod(mod) {
+    if (!mod) return false;
+    const modId = String(mod.id || '');
+    const modName = String(mod.name || '').toUpperCase();
+    const groupId = String(mod.groupId || '');
+    return (
+      groupId === 'eb_sec_mat' ||
+      modId.startsWith('eb-sec-') ||
+      modName.includes('SECUNDARIA DIURNA') ||
+      modName.includes('SECUNDARIA REGULAR')
+    );
+  }
+
+  /**
+   * Determina si el día actual es Fin de Semana (Sábado o Domingo)
+   * según el calendario real del sistema (0 = Domingo, 6 = Sábado).
+   */
+  function isWeekendActive() {
+    const day = new Date().getDay();
+    return (day === 0 || day === 6);
+  }
+
+  /**
+   * Filtra las modalidades activas de una escuela:
+   * En "Estrella de Belén":
+   * - Sábados y domingos: ÚNICAMENTE los Ciclos (Educación de Jóvenes y Adultos).
+   * - Lunes a viernes: Modalidades habituales (Preescolar, Primaria, Secundaria).
+   * En las demás escuelas: Mantiene todas sus modalidades habituales.
+   */
+  function getSchoolActiveModalities(school) {
+    if (!school || !school.modalities) return [];
+    if (school.id === '17692') {
+      const isWknd = isWeekendActive();
+      if (isWknd) {
+        return school.modalities.filter(m => Boolean(m.isWeekendOnly));
+      }
+      return school.modalities.filter(m => !m.isWeekendOnly);
+    }
+    return school.modalities;
+  }
+
+  /**
+   * MAPEO DE MODALIDADES OFICIALES DEL CONSOLIDADO (14 FILAS OFICIALES L-V O 12 EN FIN DE SEMANA)
+   * 1. Centro Escolar Estrella de Belén:
+   *    - Lunes a Viernes: Preescolar, Primaria Matutino, Primaria Vespertino, Secundaria Diurna (4 filas).
+   *    - Fin de Semana: III Ciclo y V Ciclo (Educación de Jóvenes y Adultos, 2 filas).
+   * 2. Otras 5 escuelas (2 modalidades cada una, 10 filas).
    */
   function getOfficialConsolidatedModalities(school) {
     if (school.id !== '17692') {
@@ -751,6 +971,25 @@
         isAggregated: false,
         grades: [m]
       }));
+    }
+
+    if (isWeekendActive()) {
+      return [
+        {
+          id: 'eb-mod-ciclo-3',
+          name: 'III CICLO',
+          turno: 'SABATINO',
+          isAggregated: true,
+          grades: school.modalities.filter(m => m.groupId === 'eb_ciclos_3')
+        },
+        {
+          id: 'eb-mod-ciclo-5',
+          name: 'V CICLO',
+          turno: 'SABATINO',
+          isAggregated: true,
+          grades: school.modalities.filter(m => m.groupId === 'eb_ciclos_5')
+        }
+      ];
     }
 
     return [
@@ -834,7 +1073,8 @@
       let gAsistM = gRecord && gRecord.asistM !== undefined && gRecord.asistM !== '' ? parseInt(gRecord.asistM, 10) : 0;
       let gAsistF = gRecord && gRecord.asistF !== undefined && gRecord.asistF !== '' ? parseInt(gRecord.asistF, 10) : 0;
 
-      if (gDocAsistT === 0 && !isAdminEdit) {
+      const isSec = isSecundariaMod(g);
+      if (gDocAsistT === 0 && !isAdminEdit && !isSec) {
         gMatM = 0;
         gMatF = 0;
         gAsistM = 0;
@@ -1314,6 +1554,11 @@
       card.className = `school-tile-card ${isSelected ? 'active' : ''}`;
       card.onclick = () => selectSchool(school.id);
 
+      const activeMods = getSchoolActiveModalities(school);
+      const metaText = (school.id === '17692' && isWeekendActive())
+        ? `${activeMods.length} ${activeMods.length === 1 ? 'modalidad' : 'modalidades'} (Ciclos FdS)`
+        : `${activeMods.length} ${activeMods.length === 1 ? 'modalidad' : 'modalidades'}`;
+
       card.innerHTML = `
         <div class="tile-top-row">
           <span class="tile-code">Cód. ${school.code}</span>
@@ -1322,7 +1567,7 @@
           </span>
         </div>
         <div class="tile-name">${school.shortName || school.name}</div>
-        <div class="tile-meta">${school.modalities.length} ${school.modalities.length === 1 ? 'modalidad' : 'modalidades'}</div>
+        <div class="tile-meta">${metaText}</div>
       `;
 
       container.appendChild(card);
@@ -1455,7 +1700,36 @@
     if (!state.dailyAttendance[state.currentDateStr]) {
       state.dailyAttendance[state.currentDateStr] = {};
     }
-    return state.dailyAttendance[state.currentDateStr];
+    const today = state.dailyAttendance[state.currentDateStr];
+    // Asegurar que cada escuela y modalidad exista en todayData con sus matrículas oficiales
+    state.schools.forEach(school => {
+      if (!today[school.id]) {
+        today[school.id] = { modalities: {}, saved: false };
+      }
+      if (!today[school.id].modalities) today[school.id].modalities = {};
+      school.modalities.forEach(mod => {
+        if (!today[school.id].modalities[mod.id]) {
+          today[school.id].modalities[mod.id] = {
+            matM: mod.baseMatM,
+            matF: mod.baseMatF,
+            asistM: '',
+            asistF: '',
+            docJustM: 0,
+            docJustF: 0,
+            docInjustM: 0,
+            docInjustF: 0,
+            docAsistM: mod.baseDocM,
+            docAsistF: mod.baseDocF
+          };
+        } else if (mod.isWeekendOnly && (!today[school.id].modalities[mod.id].matM && !today[school.id].modalities[mod.id].matF && (mod.baseMatM > 0 || mod.baseMatF > 0))) {
+          today[school.id].modalities[mod.id].matM = mod.baseMatM;
+          today[school.id].modalities[mod.id].matF = mod.baseMatF;
+          today[school.id].modalities[mod.id].docAsistM = mod.baseDocM;
+          today[school.id].modalities[mod.id].docAsistF = mod.baseDocF;
+        }
+      });
+    });
+    return today;
   }
 
   /**
@@ -1468,11 +1742,21 @@
     if (!school) return;
 
     const isEstrella = school.id === '17692';
+    const isWknd = isWeekendActive();
+    const activeModalities = getSchoolActiveModalities(school);
 
     const codeEl = document.getElementById('teacherCurrentCode');
     const titleEl = document.getElementById('teacherTableTitle');
+    const subTitleEl = document.getElementById('teacherSubtitle');
     if (codeEl) codeEl.textContent = `Cód: ${school.code}`;
     if (titleEl) titleEl.textContent = `${school.name}`;
+    if (subTitleEl) {
+      if (isEstrella && isWknd) {
+        subTitleEl.textContent = 'NER Estrella de Belén · Educación de Jóvenes y Adultos: Ciclos (Fin de Semana)';
+      } else {
+        subTitleEl.textContent = 'NER Estrella de Belén · Matrícula y asistencia diaria';
+      }
+    }
 
     const todayData = getTodayAttendance();
     const schoolRecord = todayData[school.id] || { modalities: {}, saved: false };
@@ -1498,10 +1782,74 @@
       if (isEstrella) {
         gradeSec.classList.remove('hidden');
         gradeSec.style.display = 'block';
-        if (gradeSelect) gradeSelect.value = state.selectedGradeId || '';
 
+        // Validar si el grado seleccionado actualmente pertenece a la escuela según el día activo
+        if (isWknd) {
+          if (!state.selectedGradeId || state.selectedGradeId === 'all' || !school.modalities.some(m => m.id === state.selectedGradeId && m.isWeekendOnly)) {
+            state.selectedGradeId = 'all-ciclos';
+          }
+        } else {
+          if (state.selectedGradeId && !['all'].includes(state.selectedGradeId)) {
+            const exists = school.modalities.some(m => m.id === state.selectedGradeId && !m.isWeekendOnly);
+            if (!exists) {
+              state.selectedGradeId = '';
+            }
+          }
+        }
+
+        // Actualizar opciones del selector desplegable
+        if (gradeSelect) {
+          if (isWknd) {
+            gradeSelect.innerHTML = `
+              <option value="all-ciclos">📚 Ver Todos los Ciclos (Fin de Semana)</option>
+              <optgroup label="Educación de Jóvenes y Adultos: Ciclos (Sabatino)">
+                <option value="eb-ciclo-3a">📚 III Ciclo - Sección A (Sabatino)</option>
+                <option value="eb-ciclo-3b">📚 III Ciclo - Sección B (Sabatino)</option>
+                <option value="eb-ciclo-5a">🎓 V Ciclo - Sección A (Sabatino)</option>
+                <option value="eb-ciclo-5b">🎓 V Ciclo - Sección B (Sabatino)</option>
+              </optgroup>
+            `;
+            gradeSelect.value = state.selectedGradeId || 'all-ciclos';
+          } else {
+            gradeSelect.innerHTML = `
+              <option value="">-- Seleccionar Grado --</option>
+              <optgroup label="Educación Inicial">
+                <option value="eb-pre-form">🎒 Preescolar Formal Multinivel (Matutino)</option>
+              </optgroup>
+              <optgroup label="Primaria Matutino (1° y 2°)">
+                <option value="eb-prim-1">📖 1° Grado (Matutino)</option>
+                <option value="eb-prim-2">📖 2° Grado (Matutino)</option>
+              </optgroup>
+              <optgroup label="Primaria Vespertino (3° a 6°)">
+                <option value="eb-prim-3">📘 3° Grado (Vespertino)</option>
+                <option value="eb-prim-4">📘 4° Grado (Vespertino)</option>
+                <option value="eb-prim-5">📘 5° Grado (Vespertino)</option>
+                <option value="eb-prim-6">📘 6° Grado (Vespertino)</option>
+              </optgroup>
+              <optgroup label="Secundaria Diurna (7° a 11°)">
+                <option value="eb-sec-7">🎓 7° Grado (Matutino)</option>
+                <option value="eb-sec-8">🎓 8° Grado (Matutino)</option>
+                <option value="eb-sec-9">🎓 9° Grado (Matutino)</option>
+                <option value="eb-sec-10">🎓 10° Grado (Matutino)</option>
+                <option value="eb-sec-11">🎓 11° Grado (Matutino)</option>
+              </optgroup>
+              <optgroup label="Vista General">
+                <option value="all">👁️ Ver Todos los Grados</option>
+              </optgroup>
+            `;
+            gradeSelect.value = state.selectedGradeId || '';
+          }
+        }
+
+        // Actualizar chips rápidos
         if (chipsContainer) {
-          const chipsData = [
+          const chipsData = isWknd ? [
+            { id: 'all-ciclos', label: '👁️ Todos los Ciclos' },
+            { id: 'eb-ciclo-3a', label: '📚 III Ciclo A' },
+            { id: 'eb-ciclo-3b', label: '📚 III Ciclo B' },
+            { id: 'eb-ciclo-5a', label: '🎓 V Ciclo A' },
+            { id: 'eb-ciclo-5b', label: '🎓 V Ciclo B' }
+          ] : [
             { id: 'eb-pre-form', label: '🎒 Preescolar' },
             { id: 'eb-prim-1', label: '📖 1°' },
             { id: 'eb-prim-2', label: '📖 2°' },
@@ -1514,7 +1862,7 @@
             { id: 'eb-sec-9', label: '🎓 9°' },
             { id: 'eb-sec-10', label: '🎓 10°' },
             { id: 'eb-sec-11', label: '🎓 11°' },
-            { id: 'all', label: '👁️ Todos' }
+            { id: 'all', label: '👁️ Ver Todos' }
           ];
           chipsContainer.innerHTML = chipsData.map(c => `
             <button type="button" class="grade-chip ${state.selectedGradeId === c.id ? 'active' : ''}" onclick="window.app.onGradeFilterChange('${c.id}')">${c.label}</button>
@@ -1528,33 +1876,52 @@
       }
     }
 
-    // En Sede Estrella de Belén: si no hay grado seleccionado, mostrar primero selector/placeholder
+    // En Sede Estrella de Belén: si no hay grado seleccionado en día de semana, mostrar primero selector/placeholder
     if (isEstrella && !state.selectedGradeId) {
-      const emptyHtml = `
-        <div class="grade-empty-selection-card">
-          <span class="empty-icon">📚</span>
-          <h3>Seleccione un Grado para Llenar Asistencia</h3>
-          <p>Elija el grado específico arriba (en el selector o botones rápidos) para cargar su matrícula y tabla de captura:</p>
-          <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-top:0.75rem;">
-            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-prim-1')">📖 1° Grado Matutino</button>
-            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-prim-3')">📘 3° Grado Vespertino</button>
-            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-sec-7')">🎓 7mo Grado Secundaria</button>
-            <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos los Grados</button>
+      if (isWknd) {
+        state.selectedGradeId = 'all-ciclos';
+      } else {
+        const emptyHtml = `
+          <div class="grade-empty-selection-card">
+            <span class="empty-icon">📚</span>
+            <h3>Seleccione un Grado para Llenar Asistencia</h3>
+            <p>Elija el grado específico arriba (en el selector o botones rápidos) para cargar su matrícula y tabla de captura:</p>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-top:0.75rem;">
+              <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-prim-1')">📖 1° Grado Matutino</button>
+              <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-prim-3')">📘 3° Grado Vespertino</button>
+              <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('eb-sec-7')">🎓 7mo Grado Secundaria</button>
+              <button type="button" class="btn btn-outline" style="font-size:0.85rem;" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos los Grados</button>
+            </div>
           </div>
-        </div>
-      `;
-      if (deskWrap) deskWrap.innerHTML = emptyHtml;
-      if (mobContainer) mobContainer.innerHTML = emptyHtml;
-      recalculateTeacherTotals();
-      return;
+        `;
+        if (deskWrap) deskWrap.innerHTML = emptyHtml;
+        if (mobContainer) mobContainer.innerHTML = emptyHtml;
+        recalculateTeacherTotals();
+        return;
+      }
     }
 
     // Determinar modalidades a desplegar
-    let displayModalities = school.modalities;
-    if (isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all') {
-      displayModalities = school.modalities.filter(m => m.id === state.selectedGradeId);
-      if (displayModalities.length === 0) {
-        displayModalities = school.modalities;
+    let displayModalities = activeModalities;
+    if (isEstrella) {
+      if (isWknd) {
+        if (state.selectedGradeId === 'all-ciclos' || state.selectedGradeId === 'all' || !state.selectedGradeId) {
+          displayModalities = school.modalities.filter(m => Boolean(m.isWeekendOnly));
+        } else if (state.selectedGradeId) {
+          displayModalities = school.modalities.filter(m => m.id === state.selectedGradeId && m.isWeekendOnly);
+          if (displayModalities.length === 0) {
+            displayModalities = school.modalities.filter(m => Boolean(m.isWeekendOnly));
+          }
+        }
+      } else {
+        if (state.selectedGradeId === 'all') {
+          displayModalities = school.modalities.filter(m => !m.isWeekendOnly);
+        } else if (state.selectedGradeId) {
+          displayModalities = school.modalities.filter(m => m.id === state.selectedGradeId && !m.isWeekendOnly);
+          if (displayModalities.length === 0) {
+            displayModalities = school.modalities.filter(m => !m.isWeekendOnly);
+          }
+        }
       }
     }
 
@@ -1573,20 +1940,23 @@
       groupsMap.get(gId).modalities.push(mod);
     });
     const groups = Array.from(groupsMap.values());
-    const isGroupedSchool = (isEstrella && state.selectedGradeId === 'all') || (!isEstrella && groups.length > 1);
+    const isGroupedSchool = (isEstrella && ['all', 'all-ciclos'].includes(state.selectedGradeId)) || (!isEstrella && groups.length > 1);
 
     // 1. RENDERIZADO VISTA ESCRITORIO
     if (deskWrap) {
-      if (isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all' && displayModalities.length > 0) {
+      if (isEstrella && state.selectedGradeId && !['all', 'all-ciclos'].includes(state.selectedGradeId) && displayModalities.length > 0) {
         const activeMod = displayModalities[0];
         const activeBanner = document.createElement('div');
         activeBanner.className = 'grade-active-banner';
+        const returnTarget = isWknd ? 'all-ciclos' : 'all';
+        const returnLabel = isWknd ? '👁️ Ver Todos los Ciclos' : '👁️ Ver Todos los Grados';
+        const tagLabel = isWknd ? 'Ciclo Activo' : 'Grado Activo';
         activeBanner.innerHTML = `
           <div class="grade-active-banner-left">
-            <span class="grade-active-tag">Grado Activo</span>
+            <span class="grade-active-tag">${tagLabel}</span>
             <span class="grade-active-title">📝 Mostrando: ${activeMod.gradeLabel || activeMod.name} (${activeMod.turno})</span>
           </div>
-          <button type="button" class="grade-active-btn-all" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos los Grados</button>
+          <button type="button" class="grade-active-btn-all" onclick="window.app.onGradeFilterChange('${returnTarget}')">${returnLabel}</button>
         `;
         deskWrap.appendChild(activeBanner);
       }
@@ -1664,16 +2034,19 @@
     }
 
     // 2. RENDERIZADO DE FILAS Y VISTA TELÉFONO
-    if (mobContainer && isEstrella && state.selectedGradeId && state.selectedGradeId !== 'all' && displayModalities.length > 0) {
+    if (mobContainer && isEstrella && state.selectedGradeId && !['all', 'all-ciclos'].includes(state.selectedGradeId) && displayModalities.length > 0) {
       const activeMod = displayModalities[0];
       const mobActiveBanner = document.createElement('div');
       mobActiveBanner.className = 'grade-active-banner';
+      const returnTarget = isWknd ? 'all-ciclos' : 'all';
+      const returnLabel = isWknd ? '👁️ Ver Todos los Ciclos' : '👁️ Ver Todos';
+      const tagLabel = isWknd ? 'Ciclo Activo' : 'Grado Activo';
       mobActiveBanner.innerHTML = `
         <div class="grade-active-banner-left">
-          <span class="grade-active-tag">Grado Activo</span>
+          <span class="grade-active-tag">${tagLabel}</span>
           <span class="grade-active-title">📝 ${activeMod.gradeLabel || activeMod.name}</span>
         </div>
-        <button type="button" class="grade-active-btn-all" onclick="window.app.onGradeFilterChange('all')">👁️ Ver Todos</button>
+        <button type="button" class="grade-active-btn-all" onclick="window.app.onGradeFilterChange('${returnTarget}')">${returnLabel}</button>
       `;
       mobContainer.appendChild(mobActiveBanner);
     }
@@ -1713,11 +2086,13 @@
           : Math.max(0, mod.baseDocF - (docJustF + docInjustF));
         const docAsistT = (parseInt(docAsistM, 10) || 0) + (parseInt(docAsistF, 10) || 0);
         const hasDocenteAtendiendo = docAsistT > 0;
+        const isSec = isSecundariaMod(mod);
+        const shouldLockZero = !hasDocenteAtendiendo && !isSec;
 
         // Matrícula
         let matM = modData && modData.matM !== undefined ? modData.matM : mod.baseMatM;
         let matF = modData && modData.matF !== undefined ? modData.matF : mod.baseMatF;
-        if (!hasDocenteAtendiendo) {
+        if (shouldLockZero) {
           matM = 0;
           matF = 0;
         }
@@ -1726,7 +2101,7 @@
         // Asistencia estudiantes
         let asistM = modData ? (modData.asistM !== undefined ? modData.asistM : '') : '';
         let asistF = modData ? (modData.asistF !== undefined ? modData.asistF : '') : '';
-        if (!hasDocenteAtendiendo) {
+        if (shouldLockZero) {
           asistM = 0;
           asistF = 0;
         }
@@ -1756,10 +2131,10 @@
 
             <!-- MATRÍCULA ACTUAL (Oficial de Dirección) -->
             <td class="mat">
-              <input type="number" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
+              <input type="number" class="cua-input mat-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
             </td>
             <td class="mat">
-              <input type="number" class="cua-input mat-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
+              <input type="number" class="cua-input mat-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
             </td>
             <td class="calc">
               <input type="text" class="cua-input calc-input" id="mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
@@ -1767,10 +2142,10 @@
 
             <!-- ASISTENCIA ESTUDIANTES -->
             <td class="asist">
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Asistencia fijada en 0."' : ''}>
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || shouldLockZero ? 'disabled' : ''} ${shouldLockZero ? 'title="Sin docente atendiendo. Asistencia fijada en 0."' : ''}>
             </td>
             <td class="asist">
-              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo. Asistencia fijada en 0."' : ''}>
+              <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || shouldLockZero ? 'disabled' : ''} ${shouldLockZero ? 'title="Sin docente atendiendo. Asistencia fijada en 0."' : ''}>
             </td>
             <td class="calc">
               <input type="text" class="cua-input calc-input" id="asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
@@ -1834,10 +2209,16 @@
               </div>
             </div>
 
-            <div class="mob-zero-doc-alert" id="mob-alert-zero-${mod.id}" style="${!hasDocenteAtendiendo ? 'display: flex;' : 'display: none;'}">
+            <div class="mob-zero-doc-alert" id="mob-alert-zero-${mod.id}" style="${shouldLockZero ? 'display: flex;' : 'display: none;'}">
               <span>⚠️</span>
               <span><strong>Sin docente atendiendo este grado.</strong> Matrícula y Asistencia fijadas automáticamente en 0.</span>
             </div>
+            ${isSec && !hasDocenteAtendiendo ? `
+            <div class="mob-sec-alert" id="mob-alert-sec-${mod.id}">
+              <span>ℹ️</span>
+              <span><strong>Docente guía ausente.</strong> Matrícula activa y habilitada para asistencia (grupo atendido por reemplazo).</span>
+            </div>
+            ` : ''}
 
             <div class="mob-table-card">
               <table class="mob-subtabla">
@@ -1858,10 +2239,10 @@
                       <small>Oficial Dirección</small>
                     </td>
                     <td>
-                      <input type="number" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
+                      <input type="number" class="cua-input mat-input mob-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="mob-mat-m-${mod.id}" data-mod="${mod.id}" data-field="matM" value="${matM}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
                     </td>
                     <td>
-                      <input type="number" class="cua-input mat-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
+                      <input type="number" class="cua-input mat-input mob-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="mob-mat-f-${mod.id}" data-mod="${mod.id}" data-field="matF" value="${matF}" readonly tabindex="-1" title="Matrícula oficial establecida por Dirección">
                     </td>
                     <td>
                       <input type="text" class="cua-input calc-input mob-input" id="mob-mat-t-${mod.id}" value="${matT}" readonly tabindex="-1">
@@ -1876,10 +2257,10 @@
                       <small>De hoy (≤ Matrícula)</small>
                     </td>
                     <td>
-                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="mob-asist-m-${mod.id}" data-mod="${mod.id}" data-field="asistM" placeholder="0" value="${asistM}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistM')" onfocus="this.select()" ${state.isLocked || shouldLockZero ? 'disabled' : ''} ${shouldLockZero ? 'title="Sin docente atendiendo"' : ''}>
                     </td>
                     <td>
-                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${!hasDocenteAtendiendo ? 'input-zero-locked' : ''}" id="mob-asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || !hasDocenteAtendiendo ? 'disabled' : ''} ${!hasDocenteAtendiendo ? 'title="Sin docente atendiendo"' : ''}>
+                      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" class="cua-input asist-input mob-input ${shouldLockZero ? 'input-zero-locked' : ''}" id="mob-asist-f-${mod.id}" data-mod="${mod.id}" data-field="asistF" placeholder="0" value="${asistF}" oninput="window.app.handleFieldInput(this, '${mod.id}', 'asistF')" onfocus="this.select()" ${state.isLocked || shouldLockZero ? 'disabled' : ''} ${shouldLockZero ? 'title="Sin docente atendiendo"' : ''}>
                     </td>
                     <td>
                       <input type="text" class="cua-input calc-input mob-input" id="mob-asist-t-${mod.id}" value="${asistT}" readonly tabindex="-1">
@@ -1987,11 +2368,16 @@
     setBothVal(`doc-asist-t-${modId}`, docAsistT);
 
     const hasDocenteAtendiendo = docAsistT > 0;
+    const isSec = isSecundariaMod(mod);
+    const shouldLockZero = !hasDocenteAtendiendo && !isSec;
     const mobAlert = document.getElementById(`mob-alert-zero-${modId}`);
+    const mobSecAlert = document.getElementById(`mob-alert-sec-${modId}`);
 
     // REGLA: Si la asistencia de docente llega a 0, la matrícula actual queda en 0
     // y se bloquea el ingreso de matrícula y asistencia para esa modalidad.
-    if (!hasDocenteAtendiendo) {
+    // EXCEPCIÓN: En Secundaria Regular, la matrícula se mantiene intacta y la asistencia se puede registrar
+    // ya que el grupo es atendido por otro docente/reemplazo.
+    if (shouldLockZero) {
       setBothVal(`mat-m-${modId}`, 0);
       setBothVal(`mat-f-${modId}`, 0);
       setBothProp(`mat-m-${modId}`, 'disabled', true);
@@ -2014,36 +2400,42 @@
       toggleBothClass(`asist-f-${modId}`, 'input-error', false);
 
       if (mobAlert) mobAlert.style.display = 'flex';
+      if (mobSecAlert) mobSecAlert.style.display = 'none';
     } else {
-      const matMEl = document.getElementById(`mat-m-${modId}`) || document.getElementById(`mob-mat-m-${modId}`);
-      if (matMEl && matMEl.classList.contains('input-zero-locked')) {
-        toggleBothClass(`mat-m-${modId}`, 'input-zero-locked', false);
-        toggleBothClass(`mat-f-${modId}`, 'input-zero-locked', false);
-        setBothProp(`mat-m-${modId}`, 'title', '');
-        setBothProp(`mat-f-${modId}`, 'title', '');
+      toggleBothClass(`mat-m-${modId}`, 'input-zero-locked', false);
+      toggleBothClass(`mat-f-${modId}`, 'input-zero-locked', false);
+      setBothProp(`mat-m-${modId}`, 'title', '');
+      setBothProp(`mat-f-${modId}`, 'title', '');
 
-        toggleBothClass(`asist-m-${modId}`, 'input-zero-locked', false);
-        toggleBothClass(`asist-f-${modId}`, 'input-zero-locked', false);
-        setBothProp(`asist-m-${modId}`, 'title', '');
-        setBothProp(`asist-f-${modId}`, 'title', '');
+      toggleBothClass(`asist-m-${modId}`, 'input-zero-locked', false);
+      toggleBothClass(`asist-f-${modId}`, 'input-zero-locked', false);
+      setBothProp(`asist-m-${modId}`, 'title', '');
+      setBothProp(`asist-f-${modId}`, 'title', '');
 
-        if (!state.isLocked) {
-          setBothProp(`mat-m-${modId}`, 'disabled', false);
-          setBothProp(`mat-f-${modId}`, 'disabled', false);
-          setBothProp(`asist-m-${modId}`, 'disabled', false);
-          setBothProp(`asist-f-${modId}`, 'disabled', false);
-        }
-
-        setBothVal(`mat-m-${modId}`, mod ? mod.baseMatM : 0);
-        setBothVal(`mat-f-${modId}`, mod ? mod.baseMatF : 0);
-        setBothVal(`asist-m-${modId}`, '');
-        setBothVal(`asist-f-${modId}`, '');
+      if (!state.isLocked) {
+        setBothProp(`asist-m-${modId}`, 'disabled', false);
+        setBothProp(`asist-f-${modId}`, 'disabled', false);
       }
+
       if (mobAlert) mobAlert.style.display = 'none';
+      if (mobSecAlert) {
+        mobSecAlert.style.display = (isSec && !hasDocenteAtendiendo) ? 'flex' : 'none';
+      }
+
+      const curM = parseInt(getFieldVal(`mat-m-${modId}`), 10);
+      const curF = parseInt(getFieldVal(`mat-f-${modId}`), 10);
+      if (isNaN(curM) || (curM === 0 && (mod ? mod.baseMatM : 0) > 0)) {
+        setBothVal(`mat-m-${modId}`, mod ? mod.baseMatM : 0);
+      }
+      if (isNaN(curF) || (curF === 0 && (mod ? mod.baseMatF : 0) > 0)) {
+        setBothVal(`mat-f-${modId}`, mod ? mod.baseMatF : 0);
+      }
     }
 
-    const matM = hasDocenteAtendiendo ? (mod ? mod.baseMatM : 0) : 0;
-    const matF = hasDocenteAtendiendo ? (mod ? mod.baseMatF : 0) : 0;
+    const baseM = mod ? mod.baseMatM : 0;
+    const baseF = mod ? mod.baseMatF : 0;
+    const matM = shouldLockZero ? 0 : (parseInt(getFieldVal(`mat-m-${modId}`), 10) || baseM);
+    const matF = shouldLockZero ? 0 : (parseInt(getFieldVal(`mat-f-${modId}`), 10) || baseF);
     const matT = matM + matF;
     setBothVal(`mat-m-${modId}`, matM);
     setBothVal(`mat-f-${modId}`, matF);
@@ -2057,7 +2449,7 @@
     setBothVal(`asist-t-${modId}`, asistT);
 
     // Validación visual de error
-    if (hasDocenteAtendiendo) {
+    if (!shouldLockZero) {
       const errAsistM = asistMStr !== '' && asistM > matM;
       toggleBothClass(`asist-m-${modId}`, 'input-error', errAsistM);
       setBothProp(`asist-m-${modId}`, 'title', errAsistM ? `Error: Asistencia masculina (${asistM}) supera matrícula (${matM})` : '');
@@ -2147,8 +2539,9 @@
     const errors = [];
     const todayData = getTodayAttendance();
     const schoolRecord = todayData[school.id] || { modalities: {} };
+    const activeMods = getSchoolActiveModalities(school);
 
-    school.modalities.forEach(mod => {
+    activeMods.forEach(mod => {
       const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
       const docJustMEl = document.getElementById(`doc-just-m-${mod.id}`) || document.getElementById(`mob-doc-just-m-${mod.id}`);
       const docJustFEl = document.getElementById(`doc-just-f-${mod.id}`) || document.getElementById(`mob-doc-just-f-${mod.id}`);
@@ -2182,6 +2575,8 @@
       const docAsistF = Math.max(0, mod.baseDocF - docAusentesF);
       const docAsistT = docAsistM + docAsistF;
 
+      const isSec = isSecundariaMod(mod);
+
       const matMEl = document.getElementById(`mat-m-${mod.id}`) || document.getElementById(`mob-mat-m-${mod.id}`);
       const matFEl = document.getElementById(`mat-f-${mod.id}`) || document.getElementById(`mob-mat-f-${mod.id}`);
       let matM = matMEl ? (parseInt(matMEl.value, 10) || 0) : (modData && modData.matM !== undefined ? modData.matM : mod.baseMatM);
@@ -2195,7 +2590,9 @@
       const asistM = parseInt(asistMStr, 10) || 0;
       const asistF = parseInt(asistFStr, 10) || 0;
 
-      if (docAsistT === 0 && (matM > 0 || matF > 0 || asistM > 0 || asistF > 0)) {
+      // EXCEPCIÓN: En Secundaria Regular, si falta el docente guía (docAsistT === 0),
+      // el grupo es atendido y la matrícula/asistencia se mantienen activas.
+      if (!isSec && docAsistT === 0 && (matM > 0 || matF > 0 || asistM > 0 || asistF > 0)) {
         errors.push({
           modId: mod.id,
           fieldId: `doc-just-m-${mod.id}`,
@@ -2203,7 +2600,7 @@
         });
       }
 
-      if (docAsistT > 0) {
+      if (docAsistT > 0 || isSec) {
         if (asistMStr !== '' && asistM > matM) {
           errors.push({
             modId: mod.id,
@@ -2243,9 +2640,11 @@
     let totDocJustM = 0, totDocJustF = 0, totDocJustT = 0;
     let totDocInjustM = 0, totDocInjustF = 0, totDocInjustT = 0;
 
+    const activeMods = getSchoolActiveModalities(school);
+
     // Agrupar por grupo para calcular subtotales acumulativos
     const groupsMap = new Map();
-    school.modalities.forEach(mod => {
+    activeMods.forEach(mod => {
       const gId = mod.groupId || 'default';
       if (!groupsMap.has(gId)) {
         groupsMap.set(gId, []);
@@ -2287,7 +2686,8 @@
         let asistM = asistMEl ? (parseInt(asistMEl.value, 10) || 0) : (modData && modData.asistM !== undefined && modData.asistM !== '' ? parseInt(modData.asistM, 10) : 0);
         let asistF = asistFEl ? (parseInt(asistFEl.value, 10) || 0) : (modData && modData.asistF !== undefined && modData.asistF !== '' ? parseInt(modData.asistF, 10) : 0);
 
-        if (docAsistT === 0) {
+        const isSec = isSecundariaMod(mod);
+        if (docAsistT === 0 && !isSec) {
           matM = 0;
           matF = 0;
           asistM = 0;
@@ -2435,8 +2835,9 @@
 
     state.schools.forEach(school => {
       const schoolRecord = todayData[school.id] || { modalities: {} };
+      const activeMods = getSchoolActiveModalities(school);
 
-      school.modalities.forEach(mod => {
+      activeMods.forEach(mod => {
         const modData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
         const baseDocM = mod.baseDocM;
         const baseDocF = mod.baseDocF;
@@ -2463,7 +2864,8 @@
         let asistM = modData && modData.asistM !== undefined && modData.asistM !== '' ? parseInt(modData.asistM, 10) : 0;
         let asistF = modData && modData.asistF !== undefined && modData.asistF !== '' ? parseInt(modData.asistF, 10) : 0;
 
-        if (docAsistT === 0 && !state.adminEditMatricula) {
+        const isSec = isSecundariaMod(mod);
+        if (docAsistT === 0 && !state.adminEditMatricula && !isSec) {
           matM = 0;
           matF = 0;
           asistM = 0;
@@ -2601,8 +3003,10 @@
 
     const modalitiesData = {};
 
-    // 4. Recopilar datos acumulativos de TODAS las modalidades del centro
-    school.modalities.forEach(mod => {
+    // 4. Recopilar datos acumulativos de las modalidades activas del centro
+    const activeMods = getSchoolActiveModalities(school);
+    activeMods.forEach(mod => {
+      const isSec = isSecundariaMod(mod);
       const mData = schoolRecord.modalities && schoolRecord.modalities[mod.id];
       const docJustM = mData ? (mData.docJustM || 0) : 0;
       const docJustF = mData ? (mData.docJustF || 0) : 0;
@@ -2618,7 +3022,9 @@
       let asistM = mData && mData.asistM !== undefined && mData.asistM !== '' ? parseInt(mData.asistM, 10) : 0;
       let asistF = mData && mData.asistF !== undefined && mData.asistF !== '' ? parseInt(mData.asistF, 10) : 0;
 
-      if (docAsistT === 0) {
+      // EXCEPCIÓN: En Secundaria Regular, si faltó el docente guía, la matrícula se mantiene intacta y se registra asistencia.
+      // En el resto de modalidades, si no hay docente, matrícula y asistencia quedan en 0.
+      if (docAsistT === 0 && !isSec) {
         matM = 0;
         matF = 0;
         asistM = 0;
@@ -2645,7 +3051,7 @@
 
     todayData[school.id].saved = true;
     todayData[school.id].savedAt = nowTimeStr;
-    todayData[school.id].modalities = modalitiesData;
+    todayData[school.id].modalities = Object.assign({}, schoolRecord.modalities, modalitiesData);
 
     saveDailyData();
     renderSchoolsTiles();
@@ -3708,7 +4114,13 @@
     toggleCloudInstructions,
     triggerCloudSync,
     toggleManualSystemLock,
-    resetSystemLockToAuto
+    resetSystemLockToAuto,
+    isWeekendActive,
+    _state: state,
+    _getSchoolActiveModalities: getSchoolActiveModalities,
+    _getOfficialConsolidatedModalities: getOfficialConsolidatedModalities,
+    _isSecundariaMod: isSecundariaMod,
+    _getOfficialModalityCalculatedData: getOfficialModalityCalculatedData
   };
 
   document.addEventListener('DOMContentLoaded', init);
